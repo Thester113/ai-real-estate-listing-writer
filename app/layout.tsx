@@ -10,25 +10,25 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'AI Real Estate Listing Writer',
-    template: '%s | AI Real Estate Listing Writer'
+    default: 'PropertyWriter - AI Real Estate Listing Writer',
+    template: '%s | PropertyWriter'
   },
   description: 'Generate compelling real estate listings with AI. Transform property details into professional, engaging descriptions that attract buyers.',
-  keywords: ['real estate', 'AI', 'listings', 'property descriptions', 'real estate marketing'],
-  authors: [{ name: 'AI Real Estate Listing Writer' }],
-  creator: 'AI Real Estate Listing Writer',
+  keywords: ['real estate', 'AI', 'listings', 'property descriptions', 'real estate marketing', 'property writer'],
+  authors: [{ name: 'PropertyWriter' }],
+  creator: 'PropertyWriter',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_APP_URL,
-    title: 'AI Real Estate Listing Writer',
+    title: 'PropertyWriter - AI Real Estate Listing Writer',
     description: 'Generate compelling real estate listings with AI',
-    siteName: 'AI Real Estate Listing Writer',
+    siteName: 'PropertyWriter',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Real Estate Listing Writer',
+    title: 'PropertyWriter - AI Real Estate Listing Writer',
     description: 'Generate compelling real estate listings with AI',
   },
   robots: {

@@ -137,7 +137,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/" className="text-xl font-bold">
-                AI Listings
+                PropertyWriter
               </Link>
               <div className="flex items-center space-x-2">
                 {profile.plan === 'pro' ? (
