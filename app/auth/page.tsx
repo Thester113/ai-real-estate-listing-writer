@@ -204,7 +204,7 @@ export default function AuthPage() {
 
         {/* Features reminder */}
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>✨ Generate professional listings in seconds</p>
+          <p>✨ 20 free listings per month to start</p>
           <p>🎯 Target specific buyer demographics</p>
           <p>📈 Increase property views and inquiries</p>
         </div>

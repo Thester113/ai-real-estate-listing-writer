@@ -28,14 +28,14 @@ const plans = [
     period: 'month',
     description: 'Perfect for getting started with AI-generated listings',
     features: [
-      '100 listings per month',
+      '20 listings per month',
       'Basic AI copywriting',
       'Standard templates',
       'Email support',
       'Basic analytics'
     ],
     limitations: [
-      'Limited to 100 listings/month',
+      'Limited to 20 listings/month',
       'Basic AI model only',
       'No priority support'
     ],
@@ -363,7 +363,7 @@ export default function PricingPage() {
             <div className="bg-card border rounded-lg p-6">
               <h3 className="font-semibold mb-3">Is there a free trial?</h3>
               <p className="text-muted-foreground">
-                The Starter plan is completely free forever with 100 listings per month. No credit card required to get started.
+                The Starter plan is completely free forever with 20 listings per month. No credit card required to get started.
               </p>
             </div>
             

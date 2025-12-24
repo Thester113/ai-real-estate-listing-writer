@@ -94,7 +94,7 @@ export default function HomePage() {
               Ready to Transform Your Listings?
             </h2>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-lg">
-              Join thousands of real estate professionals who save time and increase conversions with AI-generated listings.
+              Start with 20 free listings per month. Join thousands of real estate professionals who save time and increase conversions.
             </p>
             <Link href="/auth">
               <Button size="lg" className="h-12 px-8">

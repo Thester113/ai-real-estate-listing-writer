@@ -9,8 +9,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Rate limiting configuration
 const RATE_LIMITS = {
   starter: {
-    dailyListings: 10,
-    monthlyListings: 100,
+    dailyListings: 5,
+    monthlyListings: 20,
     maxTokensPerRequest: 2000,
   },
   pro: {

@@ -246,7 +246,7 @@ function countWords(result: ListingResult): number {
 
 function getRemainingGenerations(plan: 'starter' | 'pro', usage: any): number {
   const limits = {
-    starter: 100, // monthly
+    starter: 20, // monthly
     pro: 500
   }
   

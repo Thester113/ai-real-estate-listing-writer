@@ -102,7 +102,7 @@ export default function Dashboard() {
   }
 
   const getLimitForPlan = (plan: 'starter' | 'pro') => {
-    return plan === 'starter' ? 100 : 500
+    return plan === 'starter' ? 20 : 500
   }
 
   const getRemainingGenerations = () => {
