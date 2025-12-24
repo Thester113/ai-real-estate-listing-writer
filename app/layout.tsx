@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { Analytics } from '@/components/analytics'
+import { ErrorBoundary } from '@/components/error-boundary'
 import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -54,7 +55,9 @@ export default function RootLayout({
         inter.className,
         'min-h-screen bg-background font-sans antialiased'
       )}>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         <Analytics />
         <Toaster />
       </body>
