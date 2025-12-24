@@ -38,7 +38,7 @@ export async function getProfile(userId: string) {
 
 // Helper function to get user usage
 export async function getUserUsage(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .rpc('get_or_create_usage', { user_uuid: userId })
   
   if (error) throw error
@@ -47,7 +47,7 @@ export async function getUserUsage(userId: string) {
 
 // Helper function to increment usage
 export async function incrementUsage(userId: string, listings: number = 1, words: number = 0) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .rpc('increment_usage', {
       user_uuid: userId,
       listings_delta: listings,
