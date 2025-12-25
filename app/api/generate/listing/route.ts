@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-client'
 
 interface ListingFormData {
   propertyType: string
@@ -62,6 +63,48 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Mock generation successful')
+
+    // Extract user ID from token for database saving
+    const token = authHeader.substring(7)
+    let userId = null
+    
+    try {
+      console.log('🔍 Getting user ID from token...')
+      const { data: userData, error: authError } = await supabaseAdmin.auth.getUser(token)
+      if (userData?.user) {
+        userId = userData.user.id
+        console.log('👤 User ID found:', userId)
+      }
+    } catch (error) {
+      console.log('⚠️ Could not get user ID, skipping database save:', error)
+    }
+
+    // Save to database if we have user ID
+    if (userId) {
+      try {
+        console.log('💾 Saving generation to database...')
+        const { error: saveError } = await (supabaseAdmin as any)
+          .from('generations')
+          .insert({
+            user_id: userId,
+            result: result,
+            word_count: 50,
+            metadata: {
+              model: 'mock-api',
+              tokens_used: 250,
+              plan: 'starter'
+            }
+          })
+
+        if (saveError) {
+          console.error('❌ Failed to save generation:', saveError)
+        } else {
+          console.log('✅ Generation saved to database')
+        }
+      } catch (error) {
+        console.error('❌ Database save error:', error)
+      }
+    }
 
     return NextResponse.json({
       success: true,
