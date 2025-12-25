@@ -3,8 +3,11 @@ import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-client'
 import { validateRequest, secureJsonResponse } from '@/lib/security'
 import { getErrorMessage } from '@/lib/utils'
+import { stripeConfig, validateStripeConfig, isStripeInLiveMode } from '@/lib/stripe-config'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Validate config and create Stripe instance
+const config = validateStripeConfig()
+const stripe = new Stripe(config.secretKey, {
   apiVersion: '2023-10-16',
 })
 
@@ -74,9 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the correct price ID based on plan
-    const priceId = planId === 'pro' 
-      ? process.env.STRIPE_PRICE_ID_PRO
-      : process.env.STRIPE_PRICE_ID_STARTER
+    const priceId = planId === 'pro' ? config.priceIdPro : null
 
     if (!priceId) {
       return secureJsonResponse({ 

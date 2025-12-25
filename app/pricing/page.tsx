@@ -110,6 +110,16 @@ export default function PricingPage() {
       return // Can't "upgrade" to starter
     }
 
+    // Safety check - disable payments if flag is set
+    if (process.env.NEXT_PUBLIC_DISABLE_PAYMENTS === '1') {
+      toast({
+        title: 'Payments Temporarily Disabled',
+        description: 'Upgrade functionality is currently disabled. Please try again later.',
+        variant: 'destructive'
+      })
+      return
+    }
+
     setUpgrading(true)
 
     try {
