@@ -47,7 +47,7 @@ export async function getProfile(userId: string) {
     }
     
     // Create profile using admin client to bypass RLS
-    const { data: newProfile, error: createError } = await supabaseAdmin
+    const { data: newProfile, error: createError } = await (supabaseAdmin as any)
       .from('profiles')
       .insert({
         id: userId,
