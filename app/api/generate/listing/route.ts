@@ -82,8 +82,14 @@ export async function POST(request: NextRequest) {
     // Save to database if we have user ID
     if (userId) {
       try {
-        console.log('💾 Saving generation to database...')
-        const { error: saveError } = await (supabaseAdmin as any)
+        console.log('💾 Saving generation to database for user:', userId)
+        console.log('💾 Generation data:', {
+          user_id: userId,
+          title: result.title,
+          word_count: 50
+        })
+
+        const { data: insertResult, error: saveError } = await (supabaseAdmin as any)
           .from('generations')
           .insert({
             user_id: userId,
@@ -95,15 +101,25 @@ export async function POST(request: NextRequest) {
               plan: 'starter'
             }
           })
+          .select('*')
 
         if (saveError) {
           console.error('❌ Failed to save generation:', saveError)
+          console.error('❌ Error details:', {
+            code: saveError.code,
+            message: saveError.message,
+            details: saveError.details,
+            hint: saveError.hint
+          })
         } else {
-          console.log('✅ Generation saved to database')
+          console.log('✅ Generation saved to database successfully!')
+          console.log('✅ Saved data:', insertResult)
         }
       } catch (error) {
-        console.error('❌ Database save error:', error)
+        console.error('❌ Database save exception:', error)
       }
+    } else {
+      console.log('⚠️ No user ID available, cannot save to database')
     }
 
     return NextResponse.json({
