@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase'
 import { verifyStripeWebhook, generateIdempotencyKey, secureJsonResponse } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +22,7 @@ export async function POST(request: NextRequest) {
     
     // Check for idempotency
     const idempotencyKey = generateIdempotencyKey(event)
-    const { data: existingEvent } = await supabase
+    const { data: existingEvent } = await supabaseAdmin
       .from('webhook_events')
       .select('id')
       .eq('id', idempotencyKey)
@@ -38,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store event for idempotency
-    await supabase
+    await supabaseAdmin
       .from('webhook_events')
       .insert({
         id: idempotencyKey,
@@ -82,7 +77,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
 
   try {
     // Find user by customer ID
-    const { data: profile, error: findError } = await supabase
+    const { data: profile, error: findError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('customer_id', customerId)
@@ -97,7 +92,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
     const plan = determinePlan(subscription)
 
     // Update user profile
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         subscription_id: subscription.id,
@@ -133,7 +128,7 @@ async function handleSubscriptionCancellation(event: Stripe.Event) {
 
   try {
     // Find user by customer ID
-    const { data: profile, error: findError } = await supabase
+    const { data: profile, error: findError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('customer_id', customerId)
@@ -145,7 +140,7 @@ async function handleSubscriptionCancellation(event: Stripe.Event) {
     }
 
     // Update user to starter plan
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         subscription_status: 'canceled',
@@ -179,7 +174,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
   try {
     // Find user by customer ID
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('customer_id', customerId)
@@ -207,7 +202,7 @@ async function handlePaymentFailed(event: Stripe.Event) {
 
   try {
     // Find user by customer ID
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('customer_id', customerId)

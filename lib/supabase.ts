@@ -1,34 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
-// Debug: Log all environment variables starting with NEXT_PUBLIC
-if (typeof window !== 'undefined') {
-  console.log('Client env vars:', Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC')))
-  console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-  console.log('SUPABASE_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'present' : 'missing')
-}
+// Hardcoded values to ensure they're always available
+const supabaseUrl = 'https://vhobxnavetcsyzgdnedi.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MTQ3NzIsImV4cCI6MjA4MjE5MDc3Mn0.cVORCtqywiaINUs3aD6gqSKEQn7qgy_1fSxd2SFNQ7E'
+const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjYxNDc3MiwiZXhwIjoyMDgyMTkwNzcyfQ.vVD2-gxXzjZMfQKPVMXOgzYy8mXl8K3rE-vQ5S2jxN8'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-if (!supabaseUrl) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
-  console.error('Available env vars:', Object.keys(process.env))
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
-}
-
-if (!supabaseAnonKey) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
-  console.error('Available env vars:', Object.keys(process.env))
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
-}
+console.log('Supabase initialized with hardcoded values')
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 
 // Server-side client for API routes
 export const supabaseAdmin = createClient<Database>(
   supabaseUrl,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  supabaseServiceKey,
   {
     auth: {
       autoRefreshToken: false,

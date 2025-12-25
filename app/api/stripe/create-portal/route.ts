@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase'
 import { validateRequest, secureJsonResponse } from '@/lib/security'
 import { getErrorMessage } from '@/lib/utils'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
     if (authError || !user) {
       return secureJsonResponse({ error: 'Invalid authentication' }, 401)
@@ -42,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user profile with customer ID
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('customer_id')
       .eq('id', user.id)

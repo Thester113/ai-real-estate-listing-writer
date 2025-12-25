@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase'
 import { validateRequest, secureJsonResponse, checkRateLimit, getTokenLimit } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 import { getErrorMessage } from '@/lib/utils'
@@ -9,11 +9,6 @@ import type { ListingFormData, ListingResult } from '@/types'
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!
 })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,14 +22,14 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
     if (authError || !user) {
       return secureJsonResponse({ error: 'Invalid authentication' }, 401)
     }
 
     // Get user profile and usage
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', user.id)
@@ -45,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current usage
-    const { data: usage, error: usageError } = await (supabase as any)
+    const { data: usage, error: usageError } = await (supabaseAdmin as any)
       .rpc('get_or_create_usage', { user_uuid: user.id })
 
     if (usageError) {
@@ -130,7 +125,7 @@ export async function POST(request: NextRequest) {
     const wordCount = countWords(result)
 
     // Save generation to database
-    const { error: saveError } = await supabase
+    const { error: saveError } = await supabaseAdmin
       .from('generations')
       .insert({
         user_id: user.id,
@@ -150,7 +145,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update usage
-    const { error: usageUpdateError } = await (supabase as any)
+    const { error: usageUpdateError } = await (supabaseAdmin as any)
       .rpc('increment_usage', {
         user_uuid: user.id,
         listings_delta: 1,
