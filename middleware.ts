@@ -118,11 +118,11 @@ export function middleware(request: NextRequest) {
   // Security headers for all responses
   const response = NextResponse.next()
   
-  // Add security headers (temporarily simplified for debugging)
-  // const securityHeaders = getSecurityHeaders()
-  // Object.entries(securityHeaders).forEach(([key, value]) => {
-  //   response.headers.set(key, value)
-  // })
+  // Add security headers
+  const securityHeaders = getSecurityHeaders()
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
   
   // Add CORS headers for API routes
   if (pathname.startsWith('/api/')) {
