@@ -3,7 +3,7 @@
 
 // Simple manual control for maintenance mode
 // Set this to true to enable maintenance mode for production domain
-const ENABLE_MAINTENANCE_FOR_PRODUCTION = true
+const ENABLE_MAINTENANCE_FOR_PRODUCTION = false
 
 const isMaintenanceModeEnabled = () => {
   // If maintenance is disabled, don't show anywhere
