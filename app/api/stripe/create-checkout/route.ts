@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       customerId = customer.id
 
       // Update profile with customer ID
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('profiles')
         .update({ customer_id: customerId })
         .eq('id', user.id)
