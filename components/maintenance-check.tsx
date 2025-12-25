@@ -1,25 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MAINTENANCE_CONFIG } from '@/lib/maintenance'
+import { MAINTENANCE_CONFIG, MAINTENANCE_MODE_ENABLED } from '@/lib/maintenance'
 
 export default function MaintenanceCheck({ children }: { children: React.ReactNode }) {
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if we should show maintenance mode
-    const hostname = window.location.hostname
-    console.log('🔧 MaintenanceCheck: hostname:', hostname)
+    // Use the centralized maintenance mode configuration
+    console.log('🔧 MaintenanceCheck: MAINTENANCE_MODE_ENABLED:', MAINTENANCE_MODE_ENABLED)
     
-    // Show maintenance mode ONLY for production domain
-    const shouldShowMaintenance = 
-      hostname === 'aipropertywriter.com' || 
-      hostname === 'www.aipropertywriter.com'
-    
-    console.log('🔧 MaintenanceCheck: shouldShowMaintenance:', shouldShowMaintenance)
-    
-    setIsMaintenanceMode(shouldShowMaintenance)
+    setIsMaintenanceMode(MAINTENANCE_MODE_ENABLED)
     setIsLoading(false)
   }, [])
 
