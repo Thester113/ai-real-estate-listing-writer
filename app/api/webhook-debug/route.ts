@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       webhookSecretConfigured: !!config.webhookSecret,
       webhookSecretPrefix: config.webhookSecret ? config.webhookSecret.substring(0, 7) + '...' : 'MISSING',
       priceIdPro: config.priceIdPro || 'MISSING',
-      stripeMode: process.env.STRIPE_MODE || 'test',
+      stripeMode: config.priceIdPro.includes('price_1SiK0mA7E1wLzQE1tnB5tf1W') ? 'test' : 'live', // Determine from cleaned config
       environment: {
         STRIPE_MODE: process.env.STRIPE_MODE || 'MISSING',
         STRIPE_TEST_WEBHOOK_SECRET: process.env.STRIPE_TEST_WEBHOOK_SECRET ? 'SET' : 'MISSING',
@@ -22,7 +22,14 @@ export async function GET(request: NextRequest) {
         STRIPE_MODE_RAW: JSON.stringify(process.env.STRIPE_MODE),
         STRIPE_TEST_WEBHOOK_SECRET_RAW: process.env.STRIPE_TEST_WEBHOOK_SECRET ? JSON.stringify(process.env.STRIPE_TEST_WEBHOOK_SECRET.substring(0, 15) + '...') : 'MISSING',
         STRIPE_TEST_PRICE_ID_PRO_RAW: JSON.stringify(process.env.STRIPE_TEST_PRICE_ID_PRO)
-      }
+      },
+      cleanedValues: {
+        webhookSecret: config.webhookSecret.substring(0, 15) + '...',
+        priceIdPro: config.priceIdPro,
+        secretKey: config.secretKey.substring(0, 7) + '...'
+      },
+      webhookSecretLength: config.webhookSecret.length,
+      priceIdLength: config.priceIdPro.length
     })
   } catch (error) {
     return NextResponse.json({
