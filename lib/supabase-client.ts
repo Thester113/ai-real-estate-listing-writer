@@ -72,22 +72,36 @@ export async function getProfile(userId: string) {
 }
 
 export async function getUserUsage(userId: string) {
-  const { data, error } = await (supabase as any)
+  console.log('Getting usage for user:', userId)
+  const { data, error } = await (supabaseAdmin as any)
     .rpc('get_or_create_usage', { user_uuid: userId })
   
-  if (error) throw error
+  console.log('Usage result:', { data, error })
+  if (error) {
+    console.error('Usage error:', error)
+    // Return default values if RPC fails
+    return {
+      listings_generated: 0,
+      words_generated: 0,
+      reset_date: new Date()
+    }
+  }
   return data
 }
 
 export async function incrementUsage(userId: string, listings: number = 1, words: number = 0) {
-  const { data, error } = await (supabase as any)
+  console.log('Incrementing usage for user:', userId, { listings, words })
+  const { data, error } = await (supabaseAdmin as any)
     .rpc('increment_usage', {
       user_uuid: userId,
       listings_delta: listings,
       words_delta: words
     })
   
-  if (error) throw error
+  if (error) {
+    console.error('Increment usage error:', error)
+    throw error
+  }
   return data
 }
 
