@@ -5,14 +5,16 @@ import { validateRequest, secureJsonResponse } from '@/lib/security'
 import { getErrorMessage } from '@/lib/utils'
 import { stripeConfig, validateStripeConfig, isStripeInLiveMode } from '@/lib/stripe-config'
 
-// Validate config and create Stripe instance
-const config = validateStripeConfig()
-const stripe = new Stripe(config.secretKey, {
-  apiVersion: '2023-10-16',
-})
+// Move Stripe initialization to request time
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate config and create Stripe instance at request time
+    const config = validateStripeConfig()
+    const stripe = new Stripe(config.secretKey, {
+      apiVersion: '2023-10-16',
+    })
+
     // Validate request
     await validateRequest(request)
 
