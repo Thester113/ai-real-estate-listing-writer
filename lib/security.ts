@@ -187,7 +187,7 @@ export function validateEnvironment() {
   try {
     validateStripeConfig();
   } catch (error) {
-    throw new Error(`Stripe configuration error: ${error.message}`);
+    throw new Error(`Stripe configuration error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
