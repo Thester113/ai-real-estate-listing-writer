@@ -1,0 +1,29 @@
+🏠 AI PropertyWriter - Professional Real Estate Listings with AI
+
+WELCOME TO AI PROPERTYWRITER!
+
+Thanks for signing up! You're just one click away from creating professional, compelling real estate listings that attract buyers and generate leads.
+
+CONFIRM YOUR ACCOUNT:
+{{ .ConfirmationURL }}
+
+What you'll get with your account:
+✨ 20 free AI-generated listings per month
+✨ Target-specific buyer demographics  
+✨ SEO-optimized property descriptions
+✨ Multiple listing formats and styles
+✨ Instant copy-paste ready content
+
+NEXT STEPS:
+1. Click the confirmation link above
+2. Complete your profile setup
+3. Start generating professional listings
+4. Watch your property views increase!
+
+---
+
+Need help? Contact us at support@aipropertywriter.com
+Visit us: https://www.aipropertywriter.com
+Privacy Policy: https://www.aipropertywriter.com/privacy
+
+AI PropertyWriter - Transform Property Details into Compelling Listings

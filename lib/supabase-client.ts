@@ -35,27 +35,35 @@ export async function getProfile(userId: string) {
     .eq('id', userId)
     .single()
   
-  // If profile doesn't exist, create one
+  // If profile doesn't exist, create one using admin client
   if (error && error.code === 'PGRST116') {
     console.log('Profile not found, creating new profile for user:', userId)
     
-    // Get user info from auth
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('User not authenticated')
+    // Get user info from auth using admin client
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
+    if (userError || !user) {
+      console.error('Failed to get user from admin:', userError)
+      throw new Error('User not found in auth system')
+    }
     
-    // Create profile
-    const { data: newProfile, error: createError } = await supabase
+    // Create profile using admin client to bypass RLS
+    const { data: newProfile, error: createError } = await supabaseAdmin
       .from('profiles')
       .insert({
         id: userId,
         email: user.email || '',
-        full_name: user.user_metadata?.full_name || '',
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
         plan: 'starter'
       })
       .select('*')
       .single()
     
-    if (createError) throw createError
+    if (createError) {
+      console.error('Failed to create profile:', createError)
+      throw createError
+    }
+    
+    console.log('Successfully created new profile:', newProfile)
     return newProfile
   }
   
