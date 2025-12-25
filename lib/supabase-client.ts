@@ -86,7 +86,15 @@ export async function getUserUsage(userId: string) {
       reset_date: new Date()
     }
   }
-  return data
+  
+  // RPC returns an array, get the first item
+  const usage = Array.isArray(data) ? data[0] : data
+  console.log('Processed usage data:', usage)
+  return usage || {
+    listings_generated: 0,
+    words_generated: 0,
+    reset_date: new Date()
+  }
 }
 
 export async function incrementUsage(userId: string, listings: number = 1, words: number = 0) {
