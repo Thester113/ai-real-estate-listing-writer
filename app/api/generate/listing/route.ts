@@ -39,6 +39,9 @@ export async function POST(request: NextRequest) {
       return secureJsonResponse({ error: 'User profile not found' }, 404)
     }
 
+    // Type assertion for profile to fix TypeScript error
+    const userProfile = profile as any
+
     // Get current usage
     const { data: usage, error: usageError } = await (supabaseAdmin as any)
       .rpc('get_or_create_usage', { user_uuid: user.id })
@@ -49,10 +52,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check rate limits
-    if (!checkRateLimit(profile.plan, usage, 'daily')) {
+    if (!checkRateLimit(userProfile.plan, usage, 'daily')) {
       return secureJsonResponse({ 
         error: 'Daily generation limit reached',
-        message: `Upgrade to ${profile.plan === 'starter' ? 'Pro' : 'Enterprise'} for more generations`
+        message: `Upgrade to ${userProfile.plan === 'starter' ? 'Pro' : 'Enterprise'} for more generations`
       }, 429)
     }
 
@@ -103,7 +106,7 @@ export async function POST(request: NextRequest) {
           content: prompt
         }
       ],
-      max_tokens: getTokenLimit(profile.plan),
+      max_tokens: getTokenLimit(userProfile.plan),
       temperature: 0.7,
       response_format: { type: 'json_object' }
     })
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           model: 'gpt-4o-mini',
           tokens_used: completion.usage?.total_tokens || 0,
-          plan: profile.plan
+          plan: userProfile.plan
         }
       })
 
@@ -160,7 +163,7 @@ export async function POST(request: NextRequest) {
     // Track analytics
     trackServerEvent('listing_generated', {
       user_id: user.id,
-      plan: profile.plan,
+      plan: userProfile.plan,
       property_type: propertyType,
       word_count: wordCount,
       features_count: features.length
@@ -172,7 +175,7 @@ export async function POST(request: NextRequest) {
       meta: {
         wordCount,
         tokensUsed: completion.usage?.total_tokens || 0,
-        remainingGenerations: getRemainingGenerations(profile.plan, usage)
+        remainingGenerations: getRemainingGenerations(userProfile.plan, usage)
       }
     })
 
