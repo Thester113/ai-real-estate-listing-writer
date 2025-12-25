@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
 
     console.log('👤 Profile lookup:', { profile: profile?.id, error: profileError?.message })
 
+    let userProfile: any
+
     if (profileError || !profile) {
       console.log('❌ Profile not found, creating one')
       // Try to create profile if it doesn't exist
@@ -67,10 +69,10 @@ export async function POST(request: NextRequest) {
       }
       
       console.log('✅ Profile created:', newProfile.id)
-      const userProfile = newProfile
+      userProfile = newProfile
     } else {
       console.log('✅ Profile found:', profile.id)
-      const userProfile = profile as any
+      userProfile = profile as any
     }
 
     // For now, skip usage checks to get basic functionality working
@@ -138,13 +140,12 @@ export async function POST(request: NextRequest) {
       .from('generations')
       .insert({
         user_id: user.id,
-        prompt: JSON.stringify(body),
         result: result,
         word_count: wordCount,
         metadata: {
-          model: 'gpt-4o-mini',
-          tokens_used: completion.usage?.total_tokens || 0,
-          plan: userProfile.plan
+          model: 'mock-gpt-4o-mini',
+          tokens_used: 250,
+          plan: 'starter'
         }
       })
 
