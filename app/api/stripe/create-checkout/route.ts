@@ -119,10 +119,29 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Checkout creation error:', error)
+    console.error('Error details:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      config: {
+        secretKey: config.secretKey ? 'SET' : 'MISSING',
+        priceIdPro: config.priceIdPro,
+        webhookSecret: config.webhookSecret ? 'SET' : 'MISSING',
+      }
+    })
     
     return secureJsonResponse({
       error: getErrorMessage(error),
-      message: 'Failed to create checkout session'
+      message: 'Failed to create checkout session',
+      debug: process.env.NODE_ENV === 'development' ? {
+        errorName: error?.name,
+        errorMessage: error?.message,
+        configState: {
+          secretKey: config.secretKey ? 'SET' : 'MISSING',
+          priceIdPro: config.priceIdPro,
+          webhookSecret: config.webhookSecret ? 'SET' : 'MISSING',
+        }
+      } : undefined
     }, 500)
   }
 }
