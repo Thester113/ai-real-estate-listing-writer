@@ -59,7 +59,9 @@ export async function verifyStripeWebhook(
   body: string,
   signature: string
 ): Promise<Stripe.Event> {
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  // Import here to avoid circular dependency
+  const { stripeConfig } = await import('./stripe-config');
+  const endpointSecret = stripeConfig.webhookSecret;
   if (!endpointSecret) {
     throw new Error('Stripe webhook secret not configured');
   }
@@ -170,13 +172,22 @@ export function validateEnvironment() {
     'NEXT_PUBLIC_SUPABASE_URL',
     'SUPABASE_SERVICE_ROLE_KEY',
     'STRIPE_SECRET_KEY',
-    'STRIPE_WEBHOOK_SECRET',
   ];
+  
+  // Use stripe config validation instead of hardcoded webhook secret
+  const { validateStripeConfig } = require('./stripe-config');
   
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+  
+  // Validate Stripe configuration (includes webhook secret)
+  try {
+    validateStripeConfig();
+  } catch (error) {
+    throw new Error(`Stripe configuration error: ${error.message}`);
   }
 }
 
