@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
       return secureJsonResponse({ error: 'User profile not found' }, 404)
     }
 
-    if (!profile.customer_id) {
+    // Type assertion for profile
+    const userProfile = profile as any
+
+    if (!userProfile.customer_id) {
       return secureJsonResponse({ 
         error: 'No billing account found. Please subscribe first.' 
       }, 400)
@@ -55,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({
-      customer: profile.customer_id,
+      customer: userProfile.customer_id,
       return_url: returnUrl,
     })
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store event for idempotency
-    await supabaseAdmin
+    await (supabaseAdmin as any)
       .from('webhook_events')
       .insert({
         id: idempotencyKey,
@@ -88,11 +88,14 @@ async function handleSubscriptionChange(event: Stripe.Event) {
       return
     }
 
+    // Type assertion for profile
+    const userProfile = profile as any
+
     // Determine plan from subscription items
     const plan = determinePlan(subscription)
 
     // Update user profile
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await (supabaseAdmin as any)
       .from('profiles')
       .update({
         subscription_id: subscription.id,
@@ -101,7 +104,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
         current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', profile.id)
+      .eq('id', userProfile.id)
 
     if (updateError) {
       console.error('Failed to update profile:', updateError)
@@ -110,13 +113,13 @@ async function handleSubscriptionChange(event: Stripe.Event) {
 
     // Track analytics
     trackServerEvent('subscription_updated', {
-      user_id: profile.id,
+      user_id: userProfile.id,
       plan: plan,
       status: subscription.status,
       customer_id: customerId
     })
 
-    console.log(`Subscription updated for user ${profile.id}: ${plan} (${subscription.status})`)
+    console.log(`Subscription updated for user ${userProfile.id}: ${plan} (${subscription.status})`)
   } catch (error) {
     console.error('Error handling subscription change:', error)
   }
@@ -139,8 +142,11 @@ async function handleSubscriptionCancellation(event: Stripe.Event) {
       return
     }
 
+    // Type assertion for profile
+    const userProfile = profile as any
+
     // Update user to starter plan
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await (supabaseAdmin as any)
       .from('profiles')
       .update({
         subscription_status: 'canceled',
@@ -148,7 +154,7 @@ async function handleSubscriptionCancellation(event: Stripe.Event) {
         current_period_end: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', profile.id)
+      .eq('id', userProfile.id)
 
     if (updateError) {
       console.error('Failed to update profile after cancellation:', updateError)
@@ -157,12 +163,12 @@ async function handleSubscriptionCancellation(event: Stripe.Event) {
 
     // Track analytics
     trackServerEvent('subscription_canceled', {
-      user_id: profile.id,
+      user_id: userProfile.id,
       customer_id: customerId,
       plan: 'starter'
     })
 
-    console.log(`Subscription canceled for user ${profile.id}`)
+    console.log(`Subscription canceled for user ${userProfile.id}`)
   } catch (error) {
     console.error('Error handling subscription cancellation:', error)
   }
@@ -181,15 +187,18 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       .single()
 
     if (profile) {
+      // Type assertion for profile
+      const userProfile = profile as any
+      
       // Track successful payment
       trackServerEvent('payment_succeeded', {
-        user_id: profile.id,
+        user_id: userProfile.id,
         amount: invoice.amount_paid,
         currency: invoice.currency,
         customer_id: customerId
       })
 
-      console.log(`Payment succeeded for user ${profile.id}: ${invoice.amount_paid / 100} ${invoice.currency}`)
+      console.log(`Payment succeeded for user ${userProfile.id}: ${invoice.amount_paid / 100} ${invoice.currency}`)
     }
   } catch (error) {
     console.error('Error handling payment success:', error)
@@ -209,16 +218,19 @@ async function handlePaymentFailed(event: Stripe.Event) {
       .single()
 
     if (profile) {
+      // Type assertion for profile
+      const userProfile = profile as any
+      
       // Track failed payment
       trackServerEvent('payment_failed', {
-        user_id: profile.id,
+        user_id: userProfile.id,
         amount: invoice.amount_due,
         currency: invoice.currency,
         customer_id: customerId,
         failure_reason: invoice.last_finalization_error?.message || 'Unknown'
       })
 
-      console.log(`Payment failed for user ${profile.id}: ${invoice.amount_due / 100} ${invoice.currency}`)
+      console.log(`Payment failed for user ${userProfile.id}: ${invoice.amount_due / 100} ${invoice.currency}`)
     }
   } catch (error) {
     console.error('Error handling payment failure:', error)
