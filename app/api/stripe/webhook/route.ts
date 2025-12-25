@@ -246,15 +246,25 @@ async function handleSubscriptionChange(event: Stripe.Event) {
     const plan = determinePlan(subscription)
 
     // Update user profile
+    const updateData: any = {
+      subscription_id: subscription.id,
+      subscription_status: subscription.status as any,
+      plan: plan,
+      updated_at: new Date().toISOString()
+    }
+    
+    // Only set current_period_end if it's a valid timestamp
+    if (subscription.current_period_end && typeof subscription.current_period_end === 'number') {
+      try {
+        updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString()
+      } catch (dateError) {
+        console.warn('⚠️ Invalid current_period_end timestamp:', subscription.current_period_end)
+      }
+    }
+    
     const { error: updateError } = await (supabaseAdmin as any)
       .from('profiles')
-      .update({
-        subscription_id: subscription.id,
-        subscription_status: subscription.status as any,
-        plan: plan,
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', userProfile.id)
 
     if (updateError) {
