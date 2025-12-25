@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-client'
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
 
 interface ListingFormData {
   propertyType: string
@@ -24,6 +29,101 @@ interface ListingResult {
   callToAction: string
 }
 
+async function generatePropertyListing(formData: ListingFormData): Promise<ListingResult> {
+  const {
+    propertyType,
+    bedrooms,
+    bathrooms,
+    squareFeet,
+    features,
+    location,
+    targetAudience,
+    priceRange,
+    additionalDetails
+  } = formData
+
+  const featuresText = features?.length > 0 ? features.join(', ') : 'No specific features mentioned'
+  const priceText = priceRange ? `$${priceRange.min.toLocaleString()} - $${priceRange.max.toLocaleString()}` : 'Price upon request'
+  const squareFeetText = squareFeet ? `${squareFeet} square feet` : 'Square footage not specified'
+
+  const prompt = `You are a professional real estate copywriter. Create a compelling property listing for the following property:
+
+Property Details:
+- Type: ${propertyType}
+- Bedrooms: ${bedrooms}
+- Bathrooms: ${bathrooms}
+- Size: ${squareFeetText}
+- Location: ${location}
+- Price Range: ${priceText}
+- Target Audience: ${targetAudience}
+- Features: ${featuresText}
+- Additional Details: ${additionalDetails || 'None provided'}
+
+Create a listing with the following structure. Return ONLY valid JSON in this exact format:
+
+{
+  "title": "An attention-grabbing title (max 80 characters)",
+  "description": "A compelling 2-3 paragraph description that tells a story and highlights the lifestyle this property offers (150-300 words)",
+  "highlights": ["5-7 key bullet points highlighting the best features", "Each should be concise and benefit-focused", "Use action words and emotional language"],
+  "marketingPoints": ["3-5 unique selling propositions", "What makes this property special", "Why someone should choose this over others"],
+  "callToAction": "An urgent, compelling call-to-action that encourages immediate contact"
+}
+
+Guidelines:
+- Write in an engaging, professional tone
+- Focus on benefits and lifestyle, not just features
+- Use vivid, descriptive language that helps buyers visualize living there
+- Make it scannable with good flow
+- Avoid generic phrases like "don't miss out" 
+- Be specific to this property and location
+- Target the specified audience
+- Create urgency without being pushy`
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1500,
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No content generated')
+    }
+
+    // Parse the JSON response
+    const result = JSON.parse(content) as ListingResult
+    
+    // Validate required fields
+    if (!result.title || !result.description || !result.highlights || !result.marketingPoints || !result.callToAction) {
+      throw new Error('Missing required fields in generated content')
+    }
+
+    return result
+  } catch (error) {
+    console.error('OpenAI generation failed:', error)
+    
+    // Fallback to a professional template if OpenAI fails
+    return {
+      title: `${bedrooms}BR/${bathrooms}BA ${propertyType} in ${location}`,
+      description: `Discover this exceptional ${propertyType.toLowerCase()} offering ${bedrooms} bedrooms and ${bathrooms} bathrooms in the desirable ${location} area. This property combines modern comfort with thoughtful design, creating the perfect space for your lifestyle. ${additionalDetails || 'Schedule your viewing today to experience all this home has to offer.'}`,
+      highlights: [
+        `${bedrooms} well-appointed bedrooms`,
+        `${bathrooms} bathrooms with modern fixtures`,
+        `Prime ${location} location`,
+        ...(features?.slice(0, 4) || ['Move-in ready condition'])
+      ],
+      marketingPoints: [
+        `Desirable ${location} neighborhood`,
+        'Modern amenities and finishes',
+        'Perfect for your lifestyle needs'
+      ],
+      callToAction: 'Contact us today to schedule your private showing!'
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   console.log('🚀 Generation API called!')
   
@@ -45,24 +145,11 @@ export async function POST(request: NextRequest) {
       features: body.features?.length 
     })
 
-    // Mock successful response for now
-    const result: ListingResult = {
-      title: `Beautiful ${body.bedrooms}BR/${body.bathrooms}BA ${body.propertyType} in ${body.location}`,
-      description: `Mock listing description for testing purposes.`,
-      highlights: [
-        `${body.bedrooms} spacious bedrooms`,
-        `${body.bathrooms} well-appointed bathrooms`,
-        'Gorgeous location'
-      ],
-      marketingPoints: [
-        'Perfect for testing',
-        'Mock data generation',
-        'Development purposes'
-      ],
-      callToAction: 'This is a test listing generation!'
-    }
+    // Generate production-ready listing
+    const result = await generatePropertyListing(body)
+    const wordCount = countWords(result)
 
-    console.log('✅ Mock generation successful')
+    console.log('✅ Listing generation successful')
 
     // Extract user ID from token for database saving
     const token = authHeader.substring(7)
@@ -94,10 +181,10 @@ export async function POST(request: NextRequest) {
           .insert({
             user_id: userId,
             result: result,
-            word_count: 50,
+            word_count: wordCount,
             metadata: {
-              model: 'mock-api',
-              tokens_used: 250,
+              model: 'gpt-4o',
+              tokens_used: Math.ceil(wordCount * 1.3),
               plan: 'starter'
             }
           })
@@ -118,7 +205,7 @@ export async function POST(request: NextRequest) {
           // Update usage stats
           try {
             const { incrementUsage } = await import('@/lib/supabase-client')
-            await incrementUsage(userId, 1, 50)
+            await incrementUsage(userId, 1, wordCount)
             console.log('✅ Usage stats updated successfully!')
           } catch (usageError) {
             console.error('⚠️ Failed to update usage stats:', usageError)
@@ -135,8 +222,8 @@ export async function POST(request: NextRequest) {
       success: true,
       data: result,
       meta: {
-        wordCount: 50,
-        tokensUsed: 250,
+        wordCount: wordCount,
+        tokensUsed: Math.ceil(wordCount * 1.3),
         remainingGenerations: 19
       }
     })
