@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
     const lookupResult = {
       found: !!profile,
       error: findError?.message,
-      customerId: profile?.customer_id,
-      currentPlan: profile?.plan,
-      subscriptionStatus: profile?.subscription_status,
-      subscriptionId: profile?.subscription_id
+      customerId: (profile as any)?.customer_id,
+      currentPlan: (profile as any)?.plan,
+      subscriptionStatus: (profile as any)?.subscription_status,
+      subscriptionId: (profile as any)?.subscription_id
     }
     
     console.log('👤 Initial lookup result:', lookupResult)
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
           if (profileByEmail) {
             console.log('✅ Found user by email, updating customer_id...')
             // Update the profile with the customer_id
-            await supabaseAdmin
+            await (supabaseAdmin as any)
               .from('profiles')
               .update({ customer_id: customerId })
               .eq('id', (profileByEmail as any).id)
@@ -60,17 +60,18 @@ export async function POST(request: NextRequest) {
             profile = profileByEmail
             console.log('Updated profile with customer_id:', customerId)
           }
+          
+          return NextResponse.json({
+            success: true,
+            initialLookup: lookupResult,
+            stripeCustomer: {
+              email: customerEmail,
+              found: !!profileByEmail,
+              updated: !!profileByEmail
+            },
+            finalProfile: profile
+          })
         }
-        
-        return NextResponse.json({
-          success: true,
-          initialLookup: lookupResult,
-          stripeCustomer: {
-            email: customerEmail,
-            found: !!profileByEmail,
-            updated: true
-          }
-        })
         
       } catch (stripeError) {
         console.error('❌ Could not retrieve Stripe customer:', stripeError)

@@ -194,10 +194,10 @@ async function handleSubscriptionChange(event: Stripe.Event) {
     console.log('👤 User lookup result:', {
       found: !!profile,
       error: findError?.message,
-      customerId: profile?.customer_id,
-      currentPlan: profile?.plan,
-      subscriptionStatus: profile?.subscription_status,
-      subscriptionId: profile?.subscription_id
+      customerId: (profile as any)?.customer_id,
+      currentPlan: (profile as any)?.plan,
+      subscriptionStatus: (profile as any)?.subscription_status,
+      subscriptionId: (profile as any)?.subscription_id
     })
 
     if (findError || !profile) {
@@ -220,7 +220,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
           if (profileByEmail) {
             console.log('✅ Found user by email, updating customer_id...')
             // Update the profile with the customer_id
-            await supabaseAdmin
+            await (supabaseAdmin as any)
               .from('profiles')
               .update({ customer_id: customerId })
               .eq('id', (profileByEmail as any).id)
