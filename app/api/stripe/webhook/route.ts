@@ -4,6 +4,9 @@ import { supabaseAdmin } from '@/lib/supabase-client'
 import { getStripeConfig } from '@/lib/stripe-config'
 import { createHash } from 'crypto'
 
+// Configure Next.js to not parse the body for this webhook route
+export const runtime = 'nodejs'
+
 // Create Stripe instance with test/live mode handling
 const getStripeInstance = () => {
   const config = getStripeConfig()
@@ -23,10 +26,16 @@ export async function POST(request: NextRequest) {
   console.log('🔔 Webhook received')
   
   try {
-    const body = await request.text()
+    // Get the raw body as buffer to preserve exact formatting
+    const bodyBuffer = await request.arrayBuffer()
+    const body = Buffer.from(bodyBuffer).toString('utf8')
     const signature = request.headers.get('stripe-signature')
 
-    console.log('📝 Webhook signature present:', !!signature)
+    console.log('📝 Webhook details:')
+    console.log('  - Signature present:', !!signature)
+    console.log('  - Body buffer length:', bodyBuffer.byteLength)
+    console.log('  - Body string length:', body.length)
+    console.log('  - First 100 chars:', body.substring(0, 100))
 
     if (!signature) {
       console.error('❌ Missing Stripe signature')
@@ -56,21 +65,31 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     let event: Stripe.Event
     try {
+      // Try with string first
       event = stripe.webhooks.constructEvent(body, signature, config.webhookSecret)
-      console.log('✅ Webhook signature verified, event type:', event.type)
-    } catch (err) {
-      console.error('❌ Webhook signature verification failed:')
-      console.error('  - Error message:', err instanceof Error ? err.message : err)
-      console.error('  - Webhook secret being used:', config.webhookSecret?.substring(0, 12) + '...')
-      console.error('  - Stripe signature header:', signature?.substring(0, 30) + '...')
-      return NextResponse.json({ 
-        error: 'Invalid webhook signature',
-        debug: {
-          webhookSecretConfigured: !!config.webhookSecret,
-          signaturePresent: !!signature,
-          errorMessage: err instanceof Error ? err.message : 'Unknown error'
-        }
-      }, { status: 400 })
+      console.log('✅ Webhook signature verified with string body, event type:', event.type)
+    } catch (stringErr) {
+      console.log('❌ String body verification failed, trying with buffer...')
+      try {
+        // Try with raw buffer if string fails
+        event = stripe.webhooks.constructEvent(Buffer.from(bodyBuffer), signature, config.webhookSecret)
+        console.log('✅ Webhook signature verified with buffer body, event type:', event.type)
+      } catch (bufferErr) {
+        console.error('❌ Both string and buffer verification failed:')
+        console.error('  - String error:', stringErr instanceof Error ? stringErr.message : stringErr)
+        console.error('  - Buffer error:', bufferErr instanceof Error ? bufferErr.message : bufferErr)
+        console.error('  - Webhook secret being used:', config.webhookSecret?.substring(0, 12) + '...')
+        console.error('  - Stripe signature header:', signature?.substring(0, 30) + '...')
+        return NextResponse.json({ 
+          error: 'Invalid webhook signature',
+          debug: {
+            webhookSecretConfigured: !!config.webhookSecret,
+            signaturePresent: !!signature,
+            stringError: stringErr instanceof Error ? stringErr.message : 'Unknown error',
+            bufferError: bufferErr instanceof Error ? bufferErr.message : 'Unknown error'
+          }
+        }, { status: 400 })
+      }
     }
     
     // Check for idempotency
