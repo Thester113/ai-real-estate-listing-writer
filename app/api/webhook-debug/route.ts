@@ -25,9 +25,12 @@ export async function GET(request: NextRequest) {
       },
       cleanedValues: {
         webhookSecret: config.webhookSecret.substring(0, 15) + '...',
+        webhookSecretFull: config.webhookSecret, // Show full secret for comparison
         priceIdPro: config.priceIdPro,
         secretKey: config.secretKey.substring(0, 7) + '...'
       },
+      expectedWebhookSecret: 'whsec_GGpQqRlkaCRbCTKHiYGCfW8Li3nTQqLj',
+      secretsMatch: config.webhookSecret === 'whsec_GGpQqRlkaCRbCTKHiYGCfW8Li3nTQqLj',
       webhookSecretLength: config.webhookSecret.length,
       priceIdLength: config.priceIdPro.length
     })
