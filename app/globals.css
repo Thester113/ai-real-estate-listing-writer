@@ -131,4 +131,6 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/50;
-}// Force fresh deployment Wed Dec 24 17:50:20 MST 2025
+}
+
+/* Force fresh deployment - Wed Dec 25 01:18:00 MST 2025 */
