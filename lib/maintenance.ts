@@ -1,7 +1,21 @@
-// Simple maintenance mode configuration
-// Set this to true to enable maintenance mode
+// Maintenance mode configuration
+// Enable maintenance mode based on environment
 
-export const MAINTENANCE_MODE_ENABLED = true
+const isProductionDomain = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side check
+    return window.location.hostname === 'aipropertywriter.com' || 
+           window.location.hostname === 'www.aipropertywriter.com'
+  }
+  
+  // Server-side check
+  return process.env.NEXT_PUBLIC_APP_URL === 'https://aipropertywriter.com' ||
+         process.env.NEXT_PUBLIC_APP_URL === 'https://www.aipropertywriter.com' ||
+         process.env.VERCEL_ENV === 'production'
+}
+
+// Enable maintenance mode only for production domain
+export const MAINTENANCE_MODE_ENABLED = isProductionDomain()
 
 export const MAINTENANCE_CONFIG = {
   title: "We're Getting Ready!",
