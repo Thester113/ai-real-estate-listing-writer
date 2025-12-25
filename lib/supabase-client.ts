@@ -1,0 +1,62 @@
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
+
+// Hardcoded values - no environment variables
+const SUPABASE_URL = 'https://vhobxnavetcsyzgdnedi.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MTQ3NzIsImV4cCI6MjA4MjE5MDc3Mn0.cVORCtqywiaINUs3aD6gqSKEQn7qgy_1fSxd2SFNQ7E'
+const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjYxNDc3MiwiZXhwIjoyMDgyMTkwNzcyfQ.vVD2-gxXzjZMfQKPVMXOgzYy8mXl8K3rE-vQ5S2jxN8'
+
+console.log('NEW SUPABASE CLIENT FILE - Creating clients with hardcoded values')
+
+// Create client instances directly
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+export const supabaseAdmin = createClient<Database>(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
+
+// Helper functions
+export async function getSession() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+}
+
+export async function getProfile(userId: string) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export async function getUserUsage(userId: string) {
+  const { data, error } = await (supabase as any)
+    .rpc('get_or_create_usage', { user_uuid: userId })
+  
+  if (error) throw error
+  return data
+}
+
+export async function incrementUsage(userId: string, listings: number = 1, words: number = 0) {
+  const { data, error } = await (supabase as any)
+    .rpc('increment_usage', {
+      user_uuid: userId,
+      listings_delta: listings,
+      words_delta: words
+    })
+  
+  if (error) throw error
+  return data
+}
+
+console.log('NEW SUPABASE CLIENT FILE - Clients created successfully')

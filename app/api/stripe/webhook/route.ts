@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-client'
 import { verifyStripeWebhook, generateIdempotencyKey, secureJsonResponse } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 

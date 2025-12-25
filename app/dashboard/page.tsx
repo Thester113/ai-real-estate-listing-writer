@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { supabase, getProfile, getUserUsage } from '@/lib/supabase'
+import { supabase, getProfile, getUserUsage } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
 import { Plus, FileText, TrendingUp, Crown, Zap } from 'lucide-react'

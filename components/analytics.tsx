@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { initPostHog, trackPageView, identifyUser } from '@/lib/analytics'
 import { initSentry } from '@/lib/sentry'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-client'
 
 export function Analytics() {
   const pathname = usePathname()

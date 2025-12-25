@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-client'
 import { validateRequest, secureJsonResponse, checkRateLimit, getTokenLimit } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 import { getErrorMessage } from '@/lib/utils'
