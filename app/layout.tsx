@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { Analytics } from '@/components/analytics'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { AuthProvider } from '@/components/auth-provider'
 import { cn } from '@/lib/utils'
 import MaintenanceCheck from '@/components/maintenance-check'
 
@@ -57,9 +58,11 @@ export default function RootLayout({
         'min-h-screen bg-background font-sans antialiased'
       )}>
         <ErrorBoundary>
-          <MaintenanceCheck>
-            {children}
-          </MaintenanceCheck>
+          <AuthProvider>
+            <MaintenanceCheck>
+              {children}
+            </MaintenanceCheck>
+          </AuthProvider>
         </ErrorBoundary>
         <Analytics />
         <Toaster />

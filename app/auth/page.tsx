@@ -39,10 +39,21 @@ export default function AuthPage() {
         if (error) throw error
 
         if (data.user) {
-          toast({
-            title: 'Account created successfully!',
-            description: 'Please check your email to confirm your account.',
-          })
+          // Check if email confirmation is required
+          if (!data.session) {
+            // Email confirmation required
+            toast({
+              title: 'Account created successfully!',
+              description: 'Please check your email to confirm your account before signing in.',
+            })
+          } else {
+            // User is immediately logged in (no email confirmation required)
+            toast({
+              title: 'Welcome to AI PropertyWriter!',
+              description: 'Your account has been created and you are now signed in.',
+            })
+            router.push('/dashboard')
+          }
         }
       } else {
         // Sign in
