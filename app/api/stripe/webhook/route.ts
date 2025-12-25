@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-client'
 import { getStripeConfig } from '@/lib/stripe-config'
 import { createHash } from 'crypto'
+import { addTagsToSubscriber, getUserTags } from '@/lib/convertkit'
 
 // Configure Next.js to not parse the body for this webhook route
 export const runtime = 'nodejs'
@@ -273,6 +274,20 @@ async function handleSubscriptionChange(event: Stripe.Event) {
     }
 
     console.log(`✅ Subscription updated for user ${userProfile.id}: ${plan} (${subscription.status})`)
+
+    // Update ConvertKit tags for subscription changes
+    if (userProfile.email) {
+      try {
+        const tags = getUserTags(plan, subscription.status)
+        console.log(`📧 ConvertKit: Adding tags to ${userProfile.email}:`, tags)
+        
+        await addTagsToSubscriber(userProfile.email, tags)
+        console.log(`✅ ConvertKit: Successfully tagged ${userProfile.email}`)
+      } catch (convertKitError) {
+        console.error('ConvertKit tagging failed:', convertKitError)
+        // Don't throw - ConvertKit failure shouldn't break webhook
+      }
+    }
   } catch (error) {
     console.error('Error handling subscription change:', error)
   }

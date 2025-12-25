@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Home, Zap, Users, Star } from 'lucide-react'
+import { EmailCapture } from '@/components/email-capture'
 
 export default function HomePage() {
   return (
@@ -86,22 +87,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Email Capture Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-              Ready to Transform Your Listings?
-            </h2>
-            <p className="mx-auto max-w-[600px] text-muted-foreground md:text-lg">
-              Start with 20 free listings per month. Join thousands of real estate professionals who save time and increase conversions.
-            </p>
-            <Link href="/auth">
-              <Button size="lg" className="h-12 px-8">
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+          <div className="grid gap-12 md:grid-cols-2 items-center">
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                Get Weekly Real Estate Tips
+              </h2>
+              <p className="text-muted-foreground md:text-lg">
+                Join 1,000+ agents getting insider tips on writing listings that convert. Learn proven strategies, market insights, and AI writing techniques.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/auth">
+                  <Button size="lg" className="h-12 px-8">
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <EmailCapture
+                variant="hero"
+                title="Real Estate Listing Mastery"
+                description="Get weekly tips on writing listings that sell faster"
+                buttonText="Send Me Tips"
+                tags={["Landing Page", "Real Estate Tips"]}
+                className="w-full max-w-md"
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -39,6 +39,23 @@ export default function AuthPage() {
         if (error) throw error
 
         if (data.user) {
+          // Subscribe new user to ConvertKit
+          try {
+            await fetch('/api/convertkit/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                firstName: '',
+                tags: ['New User', 'Free Trial'],
+                plan: 'starter'
+              })
+            })
+          } catch (convertKitError) {
+            console.error('ConvertKit subscription failed:', convertKitError)
+            // Don't block signup if ConvertKit fails
+          }
+
           // Check if email confirmation is required
           if (!data.session) {
             // Email confirmation required
