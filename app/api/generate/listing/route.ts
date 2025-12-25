@@ -15,16 +15,24 @@ export async function POST(request: NextRequest) {
     // Validate request
     await validateRequest(request)
 
-    // Get user session
+    // Get user session using the authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return secureJsonResponse({ error: 'Authentication required' }, 401)
     }
 
     const token = authHeader.substring(7)
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
-    if (authError || !user) {
+    // Try to get user with the access token
+    let user
+    try {
+      const { data: userData, error: authError } = await supabaseAdmin.auth.getUser(token)
+      if (authError || !userData?.user) {
+        return secureJsonResponse({ error: 'Invalid authentication' }, 401)
+      }
+      user = userData.user
+    } catch (error) {
+      console.error('Auth error:', error)
       return secureJsonResponse({ error: 'Invalid authentication' }, 401)
     }
 
