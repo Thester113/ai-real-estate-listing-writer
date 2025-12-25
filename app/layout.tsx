@@ -58,7 +58,7 @@ export default function RootLayout({
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
-        <Analytics />
+        {/* <Analytics /> */}
         <Toaster />
       </body>
     </html>
