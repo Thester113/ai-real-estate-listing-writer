@@ -6,44 +6,57 @@ const supabaseUrl = 'https://vhobxnavetcsyzgdnedi.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MTQ3NzIsImV4cCI6MjA4MjE5MDc3Mn0.cVORCtqywiaINUs3aD6gqSKEQn7qgy_1fSxd2SFNQ7E'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjYxNDc3MiwiZXhwIjoyMDgyMTkwNzcyfQ.vVD2-gxXzjZMfQKPVMXOgzYy8mXl8K3rE-vQ5S2jxN8'
 
-console.log('Supabase lib: About to create client')
-console.log('Client env vars:', Object.keys(process.env))
-console.log('SUPABASE_URL:', supabaseUrl)
-console.log('SUPABASE_KEY:', supabaseAnonKey ? 'present' : 'missing')
-
-let supabase: any;
-try {
-  console.log('Creating supabase client...')
-  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
-  console.log('Supabase client created successfully!')
-} catch (error) {
-  console.error('Error creating supabase client in lib/supabase.ts:', error)
-  throw error
+// Global singleton instances to prevent multiple client creation
+declare global {
+  var __supabase__: any
+  var __supabaseAdmin__: any
 }
 
-export { supabase }
+console.log('Supabase lib: Checking for existing clients')
 
-// Server-side client for API routes
-let supabaseAdmin: any;
-try {
-  console.log('Creating supabaseAdmin client...')
-  supabaseAdmin = createClient<Database>(
-    supabaseUrl,
-    supabaseServiceKey,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
+// Singleton client creation
+if (!globalThis.__supabase__) {
+  console.log('Creating new supabase client...')
+  console.log('Client env vars:', Object.keys(process.env))
+  console.log('SUPABASE_URL:', supabaseUrl)
+  console.log('SUPABASE_KEY:', supabaseAnonKey ? 'present' : 'missing')
+  
+  try {
+    globalThis.__supabase__ = createClient<Database>(supabaseUrl, supabaseAnonKey)
+    console.log('Supabase client created successfully!')
+  } catch (error) {
+    console.error('Error creating supabase client:', error)
+    throw error
+  }
+} else {
+  console.log('Using existing supabase client')
+}
+
+// Singleton admin client creation
+if (!globalThis.__supabaseAdmin__) {
+  console.log('Creating new supabaseAdmin client...')
+  try {
+    globalThis.__supabaseAdmin__ = createClient<Database>(
+      supabaseUrl,
+      supabaseServiceKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
       }
-    }
-  )
-  console.log('supabaseAdmin client created successfully!')
-} catch (error) {
-  console.error('Error creating supabaseAdmin client:', error)
-  throw error
+    )
+    console.log('supabaseAdmin client created successfully!')
+  } catch (error) {
+    console.error('Error creating supabaseAdmin client:', error)
+    throw error
+  }
+} else {
+  console.log('Using existing supabaseAdmin client')
 }
 
-export { supabaseAdmin }
+export const supabase = globalThis.__supabase__
+export const supabaseAdmin = globalThis.__supabaseAdmin__
 
 // Helper function to get user session
 export async function getSession() {
