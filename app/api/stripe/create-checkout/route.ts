@@ -50,12 +50,15 @@ export async function POST(request: NextRequest) {
       return secureJsonResponse({ error: 'User profile not found' }, 404)
     }
 
-    if (profile.customer_id) {
-      customerId = profile.customer_id
+    // Type assertion for profile
+    const userProfile = profile as any
+
+    if (userProfile.customer_id) {
+      customerId = userProfile.customer_id
     } else {
       // Create new Stripe customer
       const customer = await stripe.customers.create({
-        email: user.email || profile.email,
+        email: user.email || userProfile.email,
         metadata: {
           supabase_user_id: user.id
         }
