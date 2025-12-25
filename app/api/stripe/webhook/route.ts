@@ -66,14 +66,29 @@ export async function POST(request: NextRequest) {
 
     return secureJsonResponse({ received: true }, 200)
   } catch (error) {
-    console.error('Webhook error:', error)
-    return secureJsonResponse({ error: 'Webhook processing failed' }, 500)
+    console.error('Webhook error details:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      eventType: event?.type,
+      eventId: event?.id
+    })
+    return secureJsonResponse({ 
+      error: 'Webhook processing failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, 500)
   }
 }
 
 async function handleSubscriptionChange(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription
   const customerId = subscription.customer as string
+
+  console.log('Processing subscription change:', {
+    subscriptionId: subscription.id,
+    customerId,
+    status: subscription.status,
+    eventType: event.type
+  })
 
   try {
     // Find user by customer ID
