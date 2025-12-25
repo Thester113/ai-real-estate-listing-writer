@@ -7,6 +7,15 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjYxNDc3MiwiZXhwIjoyMDgyMTkwNzcyfQ.vVD2-gxXzjZMfQKPVMXOgzYy8mXl8K3rE-vQ5S2jxN8'
 
 console.log('Supabase initialized with hardcoded values')
+console.log('Client env vars:', Object.keys(process.env))
+console.log('SUPABASE_URL:', supabaseUrl)
+console.log('SUPABASE_KEY:', supabaseAnonKey ? 'present' : 'missing')
+
+try {
+  console.log('Creating supabase client with URL:', supabaseUrl, 'and key:', supabaseAnonKey.substring(0, 10) + '...')
+} catch (e) {
+  console.error('Error in client creation debug:', e)
+}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 
