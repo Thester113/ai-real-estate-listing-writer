@@ -121,10 +121,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Checkout creation error:', error)
+    const errorDetails = error instanceof Error ? error : new Error('Unknown error')
     console.error('Error details:', {
-      name: error?.name,
-      message: error?.message,
-      stack: error?.stack,
+      name: errorDetails.name,
+      message: errorDetails.message,
+      stack: errorDetails.stack,
       config: {
         secretKey: config.secretKey ? 'SET' : 'MISSING',
         priceIdPro: config.priceIdPro,
@@ -136,8 +137,8 @@ export async function POST(request: NextRequest) {
       error: getErrorMessage(error),
       message: 'Failed to create checkout session',
       debug: process.env.NODE_ENV === 'development' ? {
-        errorName: error?.name,
-        errorMessage: error?.message,
+        errorName: errorDetails.name,
+        errorMessage: errorDetails.message,
         configState: {
           secretKey: config.secretKey ? 'SET' : 'MISSING',
           priceIdPro: config.priceIdPro,
