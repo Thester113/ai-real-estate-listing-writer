@@ -6,30 +6,44 @@ const supabaseUrl = 'https://vhobxnavetcsyzgdnedi.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MTQ3NzIsImV4cCI6MjA4MjE5MDc3Mn0.cVORCtqywiaINUs3aD6gqSKEQn7qgy_1fSxd2SFNQ7E'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjYxNDc3MiwiZXhwIjoyMDgyMTkwNzcyfQ.vVD2-gxXzjZMfQKPVMXOgzYy8mXl8K3rE-vQ5S2jxN8'
 
-console.log('Supabase initialized with hardcoded values')
+console.log('Supabase lib: About to create client')
 console.log('Client env vars:', Object.keys(process.env))
 console.log('SUPABASE_URL:', supabaseUrl)
 console.log('SUPABASE_KEY:', supabaseAnonKey ? 'present' : 'missing')
 
+let supabase: any;
 try {
-  console.log('Creating supabase client with URL:', supabaseUrl, 'and key:', supabaseAnonKey.substring(0, 10) + '...')
-} catch (e) {
-  console.error('Error in client creation debug:', e)
+  console.log('Creating supabase client...')
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+  console.log('Supabase client created successfully!')
+} catch (error) {
+  console.error('Error creating supabase client in lib/supabase.ts:', error)
+  throw error
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+export { supabase }
 
 // Server-side client for API routes
-export const supabaseAdmin = createClient<Database>(
-  supabaseUrl,
-  supabaseServiceKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
+let supabaseAdmin: any;
+try {
+  console.log('Creating supabaseAdmin client...')
+  supabaseAdmin = createClient<Database>(
+    supabaseUrl,
+    supabaseServiceKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     }
-  }
-)
+  )
+  console.log('supabaseAdmin client created successfully!')
+} catch (error) {
+  console.error('Error creating supabaseAdmin client:', error)
+  throw error
+}
+
+export { supabaseAdmin }
 
 // Helper function to get user session
 export async function getSession() {
