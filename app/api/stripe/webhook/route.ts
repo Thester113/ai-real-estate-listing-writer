@@ -1,24 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-client'
-import { verifyStripeWebhook, generateIdempotencyKey, secureJsonResponse } from '@/lib/security'
-import { trackServerEvent } from '@/lib/analytics'
+import { getStripeConfig } from '@/lib/stripe-config'
+import { createHash } from 'crypto'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+// Create Stripe instance with test/live mode handling
+const getStripeInstance = () => {
+  const config = getStripeConfig()
+  return new Stripe(config.secretKey, {
+    apiVersion: '2023-10-16',
+  })
+}
+
+// Generate idempotency key
+function generateIdempotencyKey(event: Stripe.Event): string {
+  return createHash('sha256')
+    .update(`${event.id}-${event.type}-${event.created}`)
+    .digest('hex')
+}
 
 export async function POST(request: NextRequest) {
+  console.log('🔔 Webhook received')
+  
   try {
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')
 
+    console.log('📝 Webhook signature present:', !!signature)
+
     if (!signature) {
-      return secureJsonResponse({ error: 'Missing Stripe signature' }, 400)
+      console.error('❌ Missing Stripe signature')
+      return NextResponse.json({ error: 'Missing Stripe signature' }, { status: 400 })
+    }
+
+    // Get webhook secret and verify signature
+    const config = getStripeConfig()
+    const stripe = getStripeInstance()
+    
+    console.log('🔑 Using webhook secret:', config.webhookSecret ? 'Present' : 'Missing')
+    
+    if (!config.webhookSecret) {
+      console.error('❌ Missing webhook secret')
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
     }
 
     // Verify webhook signature
-    const event = await verifyStripeWebhook(body, signature)
+    let event: Stripe.Event
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, config.webhookSecret)
+      console.log('✅ Webhook signature verified, event type:', event.type)
+    } catch (err) {
+      console.error('❌ Webhook signature verification failed:', err)
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 400 })
+    }
     
     // Check for idempotency
     const idempotencyKey = generateIdempotencyKey(event)
@@ -29,17 +63,23 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingEvent) {
-      return secureJsonResponse({ message: 'Event already processed' }, 200)
+      console.log('⚠️ Event already processed:', event.id)
+      return NextResponse.json({ message: 'Event already processed' }, { status: 200 })
     }
 
+    console.log('💾 Storing event for idempotency')
     // Store event for idempotency
-    await (supabaseAdmin as any)
-      .from('webhook_events')
-      .insert({
-        id: idempotencyKey,
-        type: event.type,
-        data: event.data
-      })
+    try {
+      await (supabaseAdmin as any)
+        .from('webhook_events')
+        .insert({
+          id: idempotencyKey,
+          type: event.type,
+          data: event.data
+        })
+    } catch (err) {
+      console.warn('⚠️ Could not store idempotency record, continuing anyway:', err)
+    }
 
     // Process the event
     switch (event.type) {
@@ -64,18 +104,18 @@ export async function POST(request: NextRequest) {
         console.log(`Unhandled event type: ${event.type}`)
     }
 
-    return secureJsonResponse({ received: true }, 200)
+    return NextResponse.json({ received: true }, { status: 200 })
   } catch (error) {
-    console.error('Webhook error details:', {
+    console.error('❌ Webhook error details:', {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
-      eventType: event?.type,
-      eventId: (event as any)?.id
+      eventType: (event as any)?.type || 'unknown',
+      eventId: (event as any)?.id || 'unknown'
     })
-    return secureJsonResponse({ 
+    return NextResponse.json({ 
       error: 'Webhook processing failed',
       details: error instanceof Error ? error.message : 'Unknown error'
-    }, 500)
+    }, { status: 500 })
   }
 }
 
@@ -126,15 +166,7 @@ async function handleSubscriptionChange(event: Stripe.Event) {
       return
     }
 
-    // Track analytics
-    trackServerEvent('subscription_updated', {
-      user_id: userProfile.id,
-      plan: plan,
-      status: subscription.status,
-      customer_id: customerId
-    })
-
-    console.log(`Subscription updated for user ${userProfile.id}: ${plan} (${subscription.status})`)
+    console.log(`✅ Subscription updated for user ${userProfile.id}: ${plan} (${subscription.status})`)
   } catch (error) {
     console.error('Error handling subscription change:', error)
   }
@@ -176,14 +208,7 @@ async function handleSubscriptionCancellation(event: Stripe.Event) {
       return
     }
 
-    // Track analytics
-    trackServerEvent('subscription_canceled', {
-      user_id: userProfile.id,
-      customer_id: customerId,
-      plan: 'starter'
-    })
-
-    console.log(`Subscription canceled for user ${userProfile.id}`)
+    console.log(`✅ Subscription canceled for user ${userProfile.id}`)
   } catch (error) {
     console.error('Error handling subscription cancellation:', error)
   }
@@ -205,15 +230,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       // Type assertion for profile
       const userProfile = profile as any
       
-      // Track successful payment
-      trackServerEvent('payment_succeeded', {
-        user_id: userProfile.id,
-        amount: invoice.amount_paid,
-        currency: invoice.currency,
-        customer_id: customerId
-      })
-
-      console.log(`Payment succeeded for user ${userProfile.id}: ${invoice.amount_paid / 100} ${invoice.currency}`)
+      console.log(`✅ Payment succeeded for user ${userProfile.id}: ${(invoice.amount_paid || 0) / 100} ${invoice.currency}`)
     }
   } catch (error) {
     console.error('Error handling payment success:', error)
@@ -236,16 +253,7 @@ async function handlePaymentFailed(event: Stripe.Event) {
       // Type assertion for profile
       const userProfile = profile as any
       
-      // Track failed payment
-      trackServerEvent('payment_failed', {
-        user_id: userProfile.id,
-        amount: invoice.amount_due,
-        currency: invoice.currency,
-        customer_id: customerId,
-        failure_reason: invoice.last_finalization_error?.message || 'Unknown'
-      })
-
-      console.log(`Payment failed for user ${userProfile.id}: ${invoice.amount_due / 100} ${invoice.currency}`)
+      console.log(`❌ Payment failed for user ${userProfile.id}: ${(invoice.amount_due || 0) / 100} ${invoice.currency}`)
     }
   } catch (error) {
     console.error('Error handling payment failure:', error)
@@ -254,17 +262,19 @@ async function handlePaymentFailed(event: Stripe.Event) {
 
 function determinePlan(subscription: Stripe.Subscription): 'starter' | 'pro' {
   // Check subscription items for price IDs
+  const config = getStripeConfig()
+  
   for (const item of subscription.items.data) {
     const priceId = item.price.id
     
-    if (priceId === process.env.STRIPE_PRICE_ID_PRO) {
+    console.log('📦 Checking price ID:', priceId, 'against config pro price:', config.priceIdPro)
+    
+    if (priceId === config.priceIdPro) {
       return 'pro'
-    }
-    if (priceId === process.env.STRIPE_PRICE_ID_STARTER) {
-      return 'starter'
     }
   }
   
   // Default to starter if no matching price found
+  console.log('⚠️ No matching price ID found, defaulting to starter')
   return 'starter'
 }
