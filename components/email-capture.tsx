@@ -82,7 +82,7 @@ export function EmailCapture({
     return (
       <div className={`text-center p-6 bg-green-50 border border-green-200 rounded-lg ${className}`}>
         <div className="text-4xl mb-2">✅</div>
-        <h3 className="text-lg font-semibold text-green-800 mb-1">You're subscribed!</</h3>
+        <h3 className="text-lg font-semibold text-green-800 mb-1">You're subscribed!</h3>
         <p className="text-green-700 text-sm">Check your email for your first real estate tip.</p>
       </div>
     )
