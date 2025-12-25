@@ -17,6 +17,11 @@ export async function GET(request: NextRequest) {
         STRIPE_LIVE_WEBHOOK_SECRET: process.env.STRIPE_LIVE_WEBHOOK_SECRET ? 'SET' : 'MISSING',
         STRIPE_TEST_PRICE_ID_PRO: process.env.STRIPE_TEST_PRICE_ID_PRO || 'MISSING',
         STRIPE_LIVE_PRICE_ID_PRO: process.env.STRIPE_LIVE_PRICE_ID_PRO || 'MISSING'
+      },
+      rawValues: {
+        STRIPE_MODE_RAW: JSON.stringify(process.env.STRIPE_MODE),
+        STRIPE_TEST_WEBHOOK_SECRET_RAW: process.env.STRIPE_TEST_WEBHOOK_SECRET ? JSON.stringify(process.env.STRIPE_TEST_WEBHOOK_SECRET.substring(0, 15) + '...') : 'MISSING',
+        STRIPE_TEST_PRICE_ID_PRO_RAW: JSON.stringify(process.env.STRIPE_TEST_PRICE_ID_PRO)
       }
     })
   } catch (error) {

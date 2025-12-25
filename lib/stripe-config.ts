@@ -1,23 +1,46 @@
 // Stripe configuration utility to safely switch between test and live modes
 
-const isLiveMode = process.env.STRIPE_MODE?.trim() === 'live'
+// Enhanced cleaning function to handle newline and tab issues
+function cleanEnvVar(value: string | undefined): string {
+  if (!value) return ''
+  // Remove newlines and tabs, then trim any leading/trailing spaces
+  return value.replace(/[\r\n\t]/g, '').trim()
+}
+
+const isLiveMode = cleanEnvVar(process.env.STRIPE_MODE) === 'live'
 
 // Get the appropriate Stripe keys based on mode
 export const getStripeConfig = () => {
   if (isLiveMode) {
-    return {
-      secretKey: process.env.STRIPE_LIVE_SECRET_KEY?.trim()!,
-      publishableKey: process.env.NEXT_PUBLIC_STRIPE_LIVE_PUBLISHABLE_KEY?.trim()!,
-      webhookSecret: process.env.STRIPE_LIVE_WEBHOOK_SECRET?.trim()!,
-      priceIdPro: process.env.STRIPE_LIVE_PRICE_ID_PRO?.trim()!,
+    const config = {
+      secretKey: cleanEnvVar(process.env.STRIPE_LIVE_SECRET_KEY),
+      publishableKey: cleanEnvVar(process.env.NEXT_PUBLIC_STRIPE_LIVE_PUBLISHABLE_KEY),
+      webhookSecret: cleanEnvVar(process.env.STRIPE_LIVE_WEBHOOK_SECRET),
+      priceIdPro: cleanEnvVar(process.env.STRIPE_LIVE_PRICE_ID_PRO),
     }
+    
+    console.log('🔧 Live mode config loaded:', {
+      secretKeyPrefix: config.secretKey.substring(0, 7) + '...',
+      webhookSecretPrefix: config.webhookSecret.substring(0, 12) + '...',
+      priceIdPro: config.priceIdPro
+    })
+    
+    return config
   } else {
-    return {
-      secretKey: process.env.STRIPE_TEST_SECRET_KEY?.trim()!,
-      publishableKey: process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY?.trim()!,
-      webhookSecret: process.env.STRIPE_TEST_WEBHOOK_SECRET?.trim()!,
-      priceIdPro: process.env.STRIPE_TEST_PRICE_ID_PRO?.trim()!,
+    const config = {
+      secretKey: cleanEnvVar(process.env.STRIPE_TEST_SECRET_KEY),
+      publishableKey: cleanEnvVar(process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY),
+      webhookSecret: cleanEnvVar(process.env.STRIPE_TEST_WEBHOOK_SECRET),
+      priceIdPro: cleanEnvVar(process.env.STRIPE_TEST_PRICE_ID_PRO),
     }
+    
+    console.log('🔧 Test mode config loaded:', {
+      secretKeyPrefix: config.secretKey.substring(0, 7) + '...',
+      webhookSecretPrefix: config.webhookSecret.substring(0, 12) + '...',
+      priceIdPro: config.priceIdPro
+    })
+    
+    return config
   }
 }
 
