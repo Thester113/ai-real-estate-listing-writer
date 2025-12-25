@@ -1,16 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
 import { supabaseAdmin } from '@/lib/supabase-client'
 import { getErrorMessage } from '@/lib/utils'
-import type { ListingFormData, ListingResult } from '@/types'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-test-key'
-})
+interface ListingFormData {
+  propertyType: string
+  bedrooms: number
+  bathrooms: number
+  squareFeet: number | null
+  features: string[]
+  location: string
+  targetAudience: string
+  priceRange: {
+    min: number
+    max: number
+  } | null
+  additionalDetails: string
+}
+
+interface ListingResult {
+  title: string
+  description: string
+  highlights: string[]
+  marketingPoints: string[]
+  callToAction: string
+}
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 Generation API called')
+    console.log('🚀 Generation API called - Simplified version')
 
     // Get user session using the authorization header
     const authHeader = request.headers.get('authorization')
@@ -75,7 +92,6 @@ export async function POST(request: NextRequest) {
       userProfile = profile as any
     }
 
-    // For now, skip usage checks to get basic functionality working
     console.log('✅ Skipping usage checks for testing')
 
     // Parse request body
@@ -98,19 +114,6 @@ export async function POST(request: NextRequest) {
         error: 'Missing required fields: propertyType, bedrooms, bathrooms, features, location, targetAudience' 
       }, { status: 400 })
     }
-
-    // Build the prompt for OpenAI
-    const prompt = buildListingPrompt({
-      propertyType,
-      bedrooms,
-      bathrooms,
-      squareFeet,
-      features,
-      location,
-      targetAudience,
-      priceRange,
-      additionalDetails
-    })
 
     // Generate listing - use mock data for testing since no OpenAI key
     console.log('🤖 Generating mock listing for testing')
@@ -167,8 +170,7 @@ export async function POST(request: NextRequest) {
       // Don't fail the request, just log the error
     }
 
-    // Skip analytics for now
-    console.log('✅ Generation successful, skipping analytics')
+    console.log('✅ Generation successful')
 
     return NextResponse.json({
       success: true,
@@ -191,56 +193,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function buildListingPrompt(data: ListingFormData): string {
-  const {
-    propertyType,
-    bedrooms,
-    bathrooms,
-    squareFeet,
-    features,
-    location,
-    targetAudience,
-    priceRange,
-    additionalDetails
-  } = data
-
-  return `Create a compelling real estate listing for the following property:
-
-Property Details:
-- Type: ${propertyType}
-- Bedrooms: ${bedrooms}
-- Bathrooms: ${bathrooms}
-${squareFeet ? `- Square Feet: ${squareFeet.toLocaleString()}` : ''}
-- Location: ${location}
-- Key Features: ${features.join(', ')}
-${priceRange ? `- Price Range: $${priceRange.min.toLocaleString()} - $${priceRange.max.toLocaleString()}` : ''}
-${additionalDetails ? `- Additional Details: ${additionalDetails}` : ''}
-
-Target Audience: ${targetAudience}
-
-Please create a professional real estate listing with the following structure:
-{
-  "title": "Compelling headline (under 80 characters)",
-  "description": "Main description paragraph (150-250 words) that tells a story and creates emotional connection",
-  "highlights": ["Key feature 1", "Key feature 2", "Key feature 3", "Key feature 4", "Key feature 5"],
-  "marketingPoints": ["Unique selling point 1", "Unique selling point 2", "Unique selling point 3"],
-  "callToAction": "Compelling call-to-action that encourages immediate action"
-}
-
-Guidelines:
-- Write for ${targetAudience} specifically
-- Use emotional language that helps buyers envision living there
-- Highlight unique features and benefits
-- Include lifestyle benefits, not just features
-- Make it scannable with good flow
-- Avoid generic phrases like "must see" or "won't last long"
-- Focus on what makes this property special
-- Use active voice and descriptive language`
-}
-
 function countWords(result: ListingResult): number {
   const text = `${result.title} ${result.description} ${result.highlights.join(' ')} ${result.marketingPoints.join(' ')} ${result.callToAction}`
   return text.split(/\s+/).length
 }
-
-// Simplified for testing - remove this function since we're not using it
