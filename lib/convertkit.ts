@@ -32,8 +32,8 @@ export async function subscribeToConvertKit({
   tags = [],
   customFields = {}
 }: ConvertKitSubscriber): Promise<ConvertKitResponse> {
-  if (!CONVERTKIT_API_KEY || !CONVERTKIT_API_SECRET || !CONVERTKIT_FORM_ID) {
-    console.error('ConvertKit: Missing API key, secret, or form ID')
+  if (!CONVERTKIT_API_KEY || !CONVERTKIT_FORM_ID) {
+    console.error('ConvertKit: Missing API key or form ID')
     return { success: false, error: 'ConvertKit not configured' }
   }
 
@@ -43,8 +43,7 @@ export async function subscribeToConvertKit({
     const response = await fetch(`${CONVERTKIT_API_URL}/forms/${CONVERTKIT_FORM_ID}/subscribe`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONVERTKIT_API_SECRET}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         api_key: CONVERTKIT_API_KEY,
@@ -83,8 +82,8 @@ export async function subscribeToConvertKit({
  * Add tags to an existing subscriber
  */
 export async function addTagsToSubscriber(email: string, tags: string[]): Promise<ConvertKitResponse> {
-  if (!CONVERTKIT_API_KEY || !CONVERTKIT_API_SECRET || tags.length === 0) {
-    return { success: false, error: 'Missing API key, secret, or tags' }
+  if (!CONVERTKIT_API_KEY || tags.length === 0) {
+    return { success: false, error: 'Missing API key or tags' }
   }
 
   try {
@@ -93,8 +92,7 @@ export async function addTagsToSubscriber(email: string, tags: string[]): Promis
     const response = await fetch(`${CONVERTKIT_API_URL}/tags`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONVERTKIT_API_SECRET}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         api_key: CONVERTKIT_API_KEY,
