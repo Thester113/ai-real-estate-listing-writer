@@ -68,6 +68,20 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const method = request.method
   
+  // Check for maintenance mode (highest priority)
+  const isMaintenanceMode = process.env.MAINTENANCE_MODE === '1'
+  
+  // Allow access to maintenance page, API health check, and static assets
+  if (pathname === '/maintenance' || 
+      pathname === '/api/health' ||
+      pathname.startsWith('/_next/') ||
+      pathname.startsWith('/favicon')) {
+    // Continue with normal processing
+  } else if (isMaintenanceMode) {
+    // Redirect all other traffic to maintenance page
+    return NextResponse.redirect(new URL('/maintenance', request.url))
+  }
+  
   // Handle CORS preflight requests
   if (method === 'OPTIONS') {
     return new Response(null, {
