@@ -2,13 +2,13 @@
 // Enable maintenance mode based on environment
 
 // Simple manual control for maintenance mode
-// Set this to true to enable maintenance mode globally
-const FORCE_MAINTENANCE_MODE = true
+// Set this to true to enable maintenance mode for production domain
+const ENABLE_MAINTENANCE_FOR_PRODUCTION = true
 
 const isMaintenanceModeEnabled = () => {
-  // If force maintenance is off, disable everywhere
-  if (!FORCE_MAINTENANCE_MODE) {
-    console.log('🔧 Maintenance: FORCE_MAINTENANCE_MODE is false - disabled everywhere')
+  // If maintenance is disabled, don't show anywhere
+  if (!ENABLE_MAINTENANCE_FOR_PRODUCTION) {
+    console.log('🔧 Maintenance: ENABLE_MAINTENANCE_FOR_PRODUCTION is false - disabled everywhere')
     return false
   }
   
