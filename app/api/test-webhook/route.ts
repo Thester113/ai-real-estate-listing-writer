@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Type assertion for profile
+    const userProfile = profile as any
+
     // Try to update user profile (same logic as webhook)
     const { error: updateError } = await (supabaseAdmin as any)
       .from('profiles')
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
         current_period_end: new Date(1769369193 * 1000).toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', profile.id)
+      .eq('id', userProfile.id)
 
     if (updateError) {
       return NextResponse.json({
