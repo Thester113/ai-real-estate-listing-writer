@@ -184,15 +184,59 @@ async function handleSubscriptionChange(event: Stripe.Event) {
 
   try {
     // Find user by customer ID
-    const { data: profile, error: findError } = await supabaseAdmin
+    console.log('🔍 Looking for user with customer_id:', customerId)
+    let { data: profile, error: findError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('customer_id', customerId)
       .single()
 
+    console.log('👤 User lookup result:', {
+      found: !!profile,
+      error: findError?.message,
+      customerId: profile?.customer_id,
+      currentPlan: profile?.plan,
+      subscriptionStatus: profile?.subscription_status,
+      subscriptionId: profile?.subscription_id
+    })
+
     if (findError || !profile) {
-      console.error('User not found for customer:', customerId)
-      return
+      console.error('❌ User not found for customer:', customerId, 'Error:', findError?.message)
+      
+      // Try to find by email from Stripe customer data as fallback
+      try {
+        const stripe = getStripeInstance()
+        const customer = await stripe.customers.retrieve(customerId)
+        const customerEmail = (customer as any).email
+        
+        if (customerEmail) {
+          console.log('🔄 Trying lookup by email:', customerEmail)
+          const { data: profileByEmail } = await supabaseAdmin
+            .from('profiles')
+            .select('*')
+            .eq('email', customerEmail)
+            .single()
+          
+          if (profileByEmail) {
+            console.log('✅ Found user by email, updating customer_id...')
+            // Update the profile with the customer_id
+            await supabaseAdmin
+              .from('profiles')
+              .update({ customer_id: customerId })
+              .eq('id', (profileByEmail as any).id)
+            
+            // Use this profile for the rest of the function
+            profile = profileByEmail
+            console.log('Updated profile with customer_id:', customerId)
+          }
+        }
+      } catch (stripeError) {
+        console.error('❌ Could not retrieve Stripe customer:', stripeError)
+      }
+      
+      if (!profile) {
+        return
+      }
     }
 
     // Type assertion for profile
