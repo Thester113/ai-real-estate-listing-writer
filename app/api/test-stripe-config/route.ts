@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
         STRIPE_MODE: process.env.STRIPE_MODE || 'MISSING',
         NODE_ENV: process.env.NODE_ENV,
         VERCEL_ENV: process.env.VERCEL_ENV,
+        STRIPE_TEST_PRICE_ID_PRO: process.env.STRIPE_TEST_PRICE_ID_PRO || 'MISSING',
+        STRIPE_LIVE_PRICE_ID_PRO: process.env.STRIPE_LIVE_PRICE_ID_PRO || 'MISSING',
       }
     })
   } catch (error) {
