@@ -171,11 +171,15 @@ async function handleSubscriptionChange(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription
   const customerId = subscription.customer as string
 
-  console.log('Processing subscription change:', {
+  console.log('🔄 Processing subscription change:', {
     subscriptionId: subscription.id,
     customerId,
     status: subscription.status,
-    eventType: event.type
+    eventType: event.type,
+    subscriptionItems: subscription.items.data.map(item => ({
+      priceId: item.price.id,
+      quantity: item.quantity
+    }))
   })
 
   try {
