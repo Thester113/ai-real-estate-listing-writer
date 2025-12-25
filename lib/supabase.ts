@@ -1,15 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
-// Fallback to hardcoded values if env vars are not available
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vhobxnavetcsyzgdnedi.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_7Ozxmx9dX0qYI9Pjlbyaww_alR_0zZp'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-console.log('Supabase config loaded:', { 
-  url: supabaseUrl ? 'set' : 'missing', 
-  key: supabaseAnonKey ? 'set' : 'missing',
-  fromEnv: !!process.env.NEXT_PUBLIC_SUPABASE_URL
-})
+if (!supabaseUrl) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+}
+
+if (!supabaseAnonKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
+}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 
