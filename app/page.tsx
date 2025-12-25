@@ -9,7 +9,7 @@ export default function HomePage() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link className="flex items-center justify-center" href="/">
           <Home className="h-6 w-6 text-primary" />
-          <span className="ml-2 font-bold text-lg">PropertyWriter</span>
+          <span className="ml-2 font-bold text-lg">AI PropertyWriter</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">
@@ -109,7 +109,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-muted-foreground">
-          © 2025 PropertyWriter. All rights reserved.
+          © 2025 AI PropertyWriter. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link className="text-xs hover:underline underline-offset-4" href="/terms">
