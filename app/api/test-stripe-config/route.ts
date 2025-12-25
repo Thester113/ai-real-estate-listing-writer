@@ -20,9 +20,10 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: errorMessage,
       env: {
         STRIPE_MODE: process.env.STRIPE_MODE || 'MISSING',
         NODE_ENV: process.env.NODE_ENV,
