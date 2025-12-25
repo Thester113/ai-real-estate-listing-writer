@@ -47,8 +47,10 @@ export async function POST(request: NextRequest) {
     const stripe = getStripeInstance()
     
     console.log('🔑 Webhook Configuration Debug:')
+    console.log('  - Request URL:', request.url)
     console.log('  - Webhook secret present:', !!config.webhookSecret)
     console.log('  - Webhook secret prefix:', config.webhookSecret?.substring(0, 12) + '...' || 'MISSING')
+    console.log('  - Webhook secret length:', config.webhookSecret?.length || 0)
     console.log('  - Signature present:', !!signature)
     console.log('  - Signature prefix:', signature?.substring(0, 20) + '...' || 'MISSING')
     console.log('  - Body length:', body.length)
@@ -56,6 +58,14 @@ export async function POST(request: NextRequest) {
     console.log('  - Environment webhook secret:', process.env.STRIPE_MODE === 'live' ? 
       (process.env.STRIPE_LIVE_WEBHOOK_SECRET ? 'SET' : 'MISSING') : 
       (process.env.STRIPE_TEST_WEBHOOK_SECRET ? 'SET' : 'MISSING'))
+    
+    // Additional debugging for headers
+    console.log('  - All Stripe headers:')
+    request.headers.forEach((value, key) => {
+      if (key.toLowerCase().includes('stripe')) {
+        console.log(`    ${key}: ${value}`)
+      }
+    })
     
     if (!config.webhookSecret) {
       console.error('❌ Missing webhook secret')
