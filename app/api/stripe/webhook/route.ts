@@ -37,7 +37,16 @@ export async function POST(request: NextRequest) {
     const config = getStripeConfig()
     const stripe = getStripeInstance()
     
-    console.log('🔑 Using webhook secret:', config.webhookSecret ? 'Present' : 'Missing')
+    console.log('🔑 Webhook Configuration Debug:')
+    console.log('  - Webhook secret present:', !!config.webhookSecret)
+    console.log('  - Webhook secret prefix:', config.webhookSecret?.substring(0, 12) + '...' || 'MISSING')
+    console.log('  - Signature present:', !!signature)
+    console.log('  - Signature prefix:', signature?.substring(0, 20) + '...' || 'MISSING')
+    console.log('  - Body length:', body.length)
+    console.log('  - Stripe mode:', process.env.STRIPE_MODE || 'test')
+    console.log('  - Environment webhook secret:', process.env.STRIPE_MODE === 'live' ? 
+      (process.env.STRIPE_LIVE_WEBHOOK_SECRET ? 'SET' : 'MISSING') : 
+      (process.env.STRIPE_TEST_WEBHOOK_SECRET ? 'SET' : 'MISSING'))
     
     if (!config.webhookSecret) {
       console.error('❌ Missing webhook secret')
@@ -50,8 +59,18 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(body, signature, config.webhookSecret)
       console.log('✅ Webhook signature verified, event type:', event.type)
     } catch (err) {
-      console.error('❌ Webhook signature verification failed:', err)
-      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 400 })
+      console.error('❌ Webhook signature verification failed:')
+      console.error('  - Error message:', err instanceof Error ? err.message : err)
+      console.error('  - Webhook secret being used:', config.webhookSecret?.substring(0, 12) + '...')
+      console.error('  - Stripe signature header:', signature?.substring(0, 30) + '...')
+      return NextResponse.json({ 
+        error: 'Invalid webhook signature',
+        debug: {
+          webhookSecretConfigured: !!config.webhookSecret,
+          signaturePresent: !!signature,
+          errorMessage: err instanceof Error ? err.message : 'Unknown error'
+        }
+      }, { status: 400 })
     }
     
     // Check for idempotency
