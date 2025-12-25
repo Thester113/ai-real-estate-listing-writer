@@ -3,6 +3,16 @@ import { subscribeToConvertKit, addTagsToSubscriber, getUserTags } from '@/lib/c
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug environment variables
+    console.log('🔧 Debug ConvertKit env vars:', {
+      hasApiKey: !!process.env.CONVERTKIT_API_KEY,
+      hasApiSecret: !!process.env.CONVERTKIT_API_SECRET,
+      hasFormId: !!process.env.CONVERTKIT_FORM_ID,
+      apiKeyFirst4: process.env.CONVERTKIT_API_KEY?.substring(0, 4),
+      secretFirst4: process.env.CONVERTKIT_API_SECRET?.substring(0, 4),
+      formId: process.env.CONVERTKIT_FORM_ID
+    })
+
     const { email, firstName, plan, subscriptionStatus, action } = await request.json()
 
     if (!email) {
