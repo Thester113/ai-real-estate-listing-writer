@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
 import { ArrowLeft, Wand2, Copy, Download, Share } from 'lucide-react'
 import Link from 'next/link'
+import { MarketAnalysis } from '@/components/market-analysis'
+import { ExportOptions } from '@/components/export-options'
 
 interface User {
   id: string
@@ -27,6 +29,11 @@ interface ListingFormData {
     max: number
   } | null
   additionalDetails: string
+  // Pro features
+  listingStyle?: string
+  tone?: string
+  wordCount?: string
+  includeKeywords?: boolean
 }
 
 interface ListingResult {
@@ -81,11 +88,42 @@ const targetAudiences = [
   'Budget-conscious buyers'
 ]
 
+// Pro-only options
+const listingStyles = [
+  { value: 'standard', label: 'Standard', description: 'Professional, balanced approach', pro: false },
+  { value: 'luxury', label: 'Luxury', description: 'Sophisticated, high-end appeal', pro: true },
+  { value: 'investment', label: 'Investment Focus', description: 'ROI and rental potential emphasis', pro: true },
+  { value: 'family', label: 'Family Lifestyle', description: 'Emotional, family-centered appeal', pro: true },
+  { value: 'modern', label: 'Modern Contemporary', description: 'Sleek, cutting-edge features', pro: true },
+  { value: 'traditional', label: 'Classic Traditional', description: 'Timeless charm and character', pro: true }
+]
+
+const toneOptions = [
+  { value: 'professional', label: 'Professional', pro: false },
+  { value: 'conversational', label: 'Conversational', pro: true },
+  { value: 'upscale', label: 'Upscale Sophisticated', pro: true },
+  { value: 'warm', label: 'Warm & Inviting', pro: true },
+  { value: 'energetic', label: 'Dynamic & Energetic', pro: true },
+  { value: 'authoritative', label: 'Expert Authority', pro: true }
+]
+
+const wordCountOptions = [
+  { value: 'standard', label: '150-200 words', description: 'Concise and focused', pro: false },
+  { value: 'detailed', label: '250-350 words', description: 'Comprehensive details', pro: true },
+  { value: 'extensive', label: '400-500 words', description: 'Full marketing content', pro: true }
+]
+
 export default function GeneratePage() {
   const [user, setUser] = useState<User | null>(null)
+  const [userPlan, setUserPlan] = useState<string>('starter')
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState<ListingResult | null>(null)
+  const [listingStyle, setListingStyle] = useState('standard')
+  const [tone, setTone] = useState('professional')
+  const [wordCount, setWordCount] = useState('standard')
+  const [includeKeywords, setIncludeKeywords] = useState(false)
+  const [customKeywords, setCustomKeywords] = useState('')
   const [formData, setFormData] = useState<ListingFormData>({
     propertyType: '',
     bedrooms: 3,
@@ -95,7 +133,11 @@ export default function GeneratePage() {
     location: '',
     targetAudience: '',
     priceRange: null,
-    additionalDetails: ''
+    additionalDetails: '',
+    listingStyle: 'standard',
+    tone: 'professional',
+    wordCount: 'standard',
+    includeKeywords: false
   })
   const router = useRouter()
   const { toast } = useToast()
@@ -114,6 +156,17 @@ export default function GeneratePage() {
       }
 
       setUser(session.user)
+      
+      // Get user profile to check plan
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (profile) {
+        setUserPlan((profile as any).plan || 'starter')
+      }
     } catch (error) {
       console.error('Auth error:', error)
       router.push('/auth')
@@ -140,13 +193,26 @@ export default function GeneratePage() {
     setGenerating(true)
 
     try {
+      // Prepare the form data with Pro features
+      const submissionData = {
+        ...formData,
+        // Include Pro features if user has Pro plan
+        ...(userPlan === 'pro' && {
+          listingStyle,
+          tone,
+          wordCount,
+          includeKeywords,
+          customKeywords: includeKeywords ? customKeywords : undefined
+        })
+      }
+
       const response = await fetch('/api/generate/listing', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submissionData)
       })
 
       const data = await response.json()
@@ -198,29 +264,6 @@ export default function GeneratePage() {
     }
   }
 
-  const exportAsText = () => {
-    if (!result) return
-    
-    const text = `${result.title}
-
-${result.description}
-
-Key Features:
-${result.highlights.map(h => `• ${h}`).join('\n')}
-
-Marketing Points:
-${result.marketingPoints.map(p => `• ${p}`).join('\n')}
-
-${result.callToAction}`
-
-    const blob = new Blob([text], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `listing-${Date.now()}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
 
   const generateNewListing = () => {
     setResult(null)
@@ -233,8 +276,18 @@ ${result.callToAction}`
       location: '',
       targetAudience: '',
       priceRange: null,
-      additionalDetails: ''
+      additionalDetails: '',
+      listingStyle: 'standard',
+      tone: 'professional',
+      wordCount: 'standard',
+      includeKeywords: false
     })
+    // Reset Pro feature states
+    setListingStyle('standard')
+    setTone('professional')
+    setWordCount('standard')
+    setIncludeKeywords(false)
+    setCustomKeywords('')
   }
 
   if (loading) {
@@ -264,10 +317,6 @@ ${result.callToAction}`
                   <Copy className="h-4 w-4 mr-2" />
                   Copy All
                 </Button>
-                <Button variant="outline" size="sm" onClick={exportAsText}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
               </div>
             )}
           </div>
@@ -279,7 +328,17 @@ ${result.callToAction}`
           {/* Form */}
           <div className="space-y-6">
             <div className="bg-card border rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-6">Property Details</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold">Property Details</h2>
+                {userPlan === 'starter' && (
+                  <Link
+                    href="/dashboard?upgrade=true"
+                    className="text-xs bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1.5 rounded-full hover:shadow-lg transition-all"
+                  >
+                    ✨ Upgrade to Pro for Advanced Features
+                  </Link>
+                )}
+              </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Property Type */}
@@ -439,6 +498,127 @@ ${result.callToAction}`
                   </div>
                 </div>
 
+                {/* Pro Features Section */}
+                {userPlan === 'pro' && (
+                  <div className="border-t border-border pt-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center">
+                      <span className="mr-2">✨</span>
+                      Pro Features
+                      <span className="ml-2 px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+                        Pro Only
+                      </span>
+                    </h3>
+                    
+                    {/* Listing Style */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3">
+                        Listing Style
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {listingStyles.map((style) => (
+                          <div
+                            key={style.value}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                              listingStyle === style.value
+                                ? 'border-primary bg-primary/5'
+                                : 'border-input hover:border-primary/50'
+                            }`}
+                            onClick={() => setListingStyle(style.value)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-medium text-sm">{style.label}</h4>
+                                <p className="text-xs text-muted-foreground mt-1">{style.description}</p>
+                              </div>
+                              {style.pro && (
+                                <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                                  Pro
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tone Selection */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3">
+                        Tone & Voice
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {toneOptions.map((toneOption) => (
+                          <button
+                            key={toneOption.value}
+                            type="button"
+                            className={`p-2 text-sm border rounded-md transition-all ${
+                              tone === toneOption.value
+                                ? 'border-primary bg-primary/5 text-primary'
+                                : 'border-input hover:border-primary/50'
+                            }`}
+                            onClick={() => setTone(toneOption.value)}
+                          >
+                            {toneOption.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Word Count */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-3">
+                        Content Length
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {wordCountOptions.map((option) => (
+                          <div
+                            key={option.value}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                              wordCount === option.value
+                                ? 'border-primary bg-primary/5'
+                                : 'border-input hover:border-primary/50'
+                            }`}
+                            onClick={() => setWordCount(option.value)}
+                          >
+                            <h4 className="font-medium text-sm">{option.label}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">{option.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* SEO Keywords */}
+                    <div className="mb-6">
+                      <div className="flex items-center mb-3">
+                        <input
+                          type="checkbox"
+                          id="includeKeywords"
+                          checked={includeKeywords}
+                          onChange={(e) => setIncludeKeywords(e.target.checked)}
+                          className="h-4 w-4 text-primary focus:ring-primary border-input rounded"
+                        />
+                        <label htmlFor="includeKeywords" className="ml-2 text-sm font-medium">
+                          Include SEO Keywords
+                        </label>
+                      </div>
+                      {includeKeywords && (
+                        <div className="mt-2">
+                          <input
+                            type="text"
+                            value={customKeywords}
+                            onChange={(e) => setCustomKeywords(e.target.value)}
+                            className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="Enter keywords separated by commas (e.g., modern home, downtown, investment property)"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            These keywords will be naturally integrated into your listing content for better SEO.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Additional Details */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -478,6 +658,15 @@ ${result.callToAction}`
 
           {/* Result */}
           <div className="space-y-6">
+            {/* Market Analysis for Pro users */}
+            {userPlan === 'pro' && formData.location && formData.propertyType && (
+              <MarketAnalysis 
+                location={formData.location}
+                propertyType={formData.propertyType}
+                priceRange={formData.priceRange}
+              />
+            )}
+            
             {result ? (
               <div className="bg-card border rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -574,6 +763,12 @@ ${result.callToAction}`
                         <Copy className="h-3 w-3" />
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Export Options */}
+                  <div>
+                    <label className="block text-sm font-medium mb-3">Export Options</label>
+                    <ExportOptions listing={result} userPlan={userPlan as 'starter' | 'pro'} />
                   </div>
                 </div>
               </div>

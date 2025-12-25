@@ -19,6 +19,12 @@ interface ListingFormData {
     max: number
   } | null
   additionalDetails: string
+  // Pro features
+  listingStyle?: string
+  tone?: string
+  wordCount?: string
+  includeKeywords?: boolean
+  customKeywords?: string
 }
 
 interface ListingResult {
@@ -39,12 +45,81 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
     location,
     targetAudience,
     priceRange,
-    additionalDetails
+    additionalDetails,
+    listingStyle = 'standard',
+    tone = 'professional',
+    wordCount = 'standard',
+    includeKeywords = false,
+    customKeywords = ''
   } = formData
 
   const featuresText = features?.length > 0 ? features.join(', ') : 'No specific features mentioned'
   const priceText = priceRange ? `$${priceRange.min.toLocaleString()} - $${priceRange.max.toLocaleString()}` : 'Price upon request'
   const squareFeetText = squareFeet ? `${squareFeet} square feet` : 'Square footage not specified'
+
+  // Build style-specific instructions
+  let styleInstructions = ''
+  switch (listingStyle) {
+    case 'luxury':
+      styleInstructions = 'Focus on sophistication, premium amenities, and exclusive lifestyle. Use elegant language and emphasize prestige.'
+      break
+    case 'investment':
+      styleInstructions = 'Emphasize ROI potential, rental income, appreciation prospects, and investment benefits. Include market analysis language.'
+      break
+    case 'family':
+      styleInstructions = 'Focus on family life, safety, community, schools, and creating memories. Use warm, emotional language.'
+      break
+    case 'modern':
+      styleInstructions = 'Highlight contemporary design, smart home features, cutting-edge amenities, and sleek aesthetics.'
+      break
+    case 'traditional':
+      styleInstructions = 'Emphasize classic charm, timeless features, character, and enduring appeal.'
+      break
+    default:
+      styleInstructions = 'Use a balanced, professional approach that appeals to a broad audience.'
+  }
+
+  // Build tone instructions
+  let toneInstructions = ''
+  switch (tone) {
+    case 'conversational':
+      toneInstructions = 'Write in a friendly, approachable tone as if speaking directly to a friend.'
+      break
+    case 'upscale':
+      toneInstructions = 'Use sophisticated, refined language that conveys luxury and exclusivity.'
+      break
+    case 'warm':
+      toneInstructions = 'Create a welcoming, cozy feeling with emotionally resonant language.'
+      break
+    case 'energetic':
+      toneInstructions = 'Use dynamic, exciting language that creates enthusiasm and momentum.'
+      break
+    case 'authoritative':
+      toneInstructions = 'Write with confidence and expertise, establishing credibility and trust.'
+      break
+    default:
+      toneInstructions = 'Maintain a professional, balanced tone.'
+  }
+
+  // Determine word count range
+  let wordCountRange = '150-200 words'
+  let maxTokens = 1200
+  switch (wordCount) {
+    case 'detailed':
+      wordCountRange = '250-350 words'
+      maxTokens = 1800
+      break
+    case 'extensive':
+      wordCountRange = '400-500 words'
+      maxTokens = 2500
+      break
+  }
+
+  // Build keywords instruction
+  let keywordsInstruction = ''
+  if (includeKeywords && customKeywords) {
+    keywordsInstruction = `\n\nSEO Keywords to naturally integrate: ${customKeywords}\nWeave these keywords naturally into the content without making it feel forced or spammy.`
+  }
 
   const prompt = `You are a professional real estate copywriter. Create a compelling property listing for the following property:
 
@@ -59,18 +134,23 @@ Property Details:
 - Features: ${featuresText}
 - Additional Details: ${additionalDetails || 'None provided'}
 
+STYLE: ${styleInstructions}
+TONE: ${toneInstructions}
+LENGTH: ${wordCountRange}${keywordsInstruction}
+
 Create a listing with the following structure. Return ONLY valid JSON in this exact format:
 
 {
   "title": "An attention-grabbing title (max 80 characters)",
-  "description": "A compelling 2-3 paragraph description that tells a story and highlights the lifestyle this property offers (150-300 words)",
+  "description": "A compelling description that tells a story and highlights the lifestyle this property offers (${wordCountRange})",
   "highlights": ["5-7 key bullet points highlighting the best features", "Each should be concise and benefit-focused", "Use action words and emotional language"],
   "marketingPoints": ["3-5 unique selling propositions", "What makes this property special", "Why someone should choose this over others"],
   "callToAction": "An urgent, compelling call-to-action that encourages immediate contact"
 }
 
 Guidelines:
-- Write in an engaging, professional tone
+- ${toneInstructions}
+- ${styleInstructions}
 - Focus on benefits and lifestyle, not just features
 - Use vivid, descriptive language that helps buyers visualize living there
 - Make it scannable with good flow
@@ -84,7 +164,7 @@ Guidelines:
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: maxTokens,
     })
 
     const content = completion.choices[0]?.message?.content

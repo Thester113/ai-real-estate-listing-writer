@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { supabase, getProfile, getUserUsage } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
-import { Plus, FileText, TrendingUp, Crown, Zap } from 'lucide-react'
+import { Plus, FileText, TrendingUp, Crown, Zap, Upload, BarChart3, Palette, Target, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 interface Profile {
@@ -219,7 +219,14 @@ export default function Dashboard() {
                   New Listing
                 </Link>
               </Button>
-              {profile.plan === 'starter' && (
+              {profile.plan === 'pro' ? (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/generate/bulk">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Generation
+                  </Link>
+                </Button>
+              ) : (
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/pricing">
                     <Crown className="h-4 w-4 mr-2" />
@@ -230,6 +237,67 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Pro Features Section */}
+        {profile.plan === 'pro' && (
+          <div className="bg-card border rounded-lg shadow-sm mb-8">
+            <div className="p-6 border-b">
+              <div className="flex items-center">
+                <Crown className="h-5 w-5 text-yellow-500 mr-2" />
+                <h2 className="text-xl font-semibold">Pro Features</h2>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Link href="/generate" className="group">
+                  <div className="p-4 rounded-lg border transition-all hover:shadow-md hover:border-primary/50">
+                    <div className="flex items-center mb-2">
+                      <Palette className="h-5 w-5 text-primary mr-2" />
+                      <h3 className="font-medium">Advanced Styles</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Luxury, investment, family, and custom listing styles
+                    </p>
+                  </div>
+                </Link>
+                
+                <Link href="/generate/bulk" className="group">
+                  <div className="p-4 rounded-lg border transition-all hover:shadow-md hover:border-primary/50">
+                    <div className="flex items-center mb-2">
+                      <Upload className="h-5 w-5 text-primary mr-2" />
+                      <h3 className="font-medium">Bulk Generation</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Generate multiple listings from CSV upload
+                    </p>
+                  </div>
+                </Link>
+                
+                <Link href="/analytics" className="group">
+                  <div className="p-4 rounded-lg border transition-all hover:shadow-md hover:border-primary/50">
+                    <div className="flex items-center mb-2">
+                      <BarChart3 className="h-5 w-5 text-primary mr-2" />
+                      <h3 className="font-medium">Analytics</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Track performance and usage trends
+                    </p>
+                  </div>
+                </Link>
+                
+                <div className="p-4 rounded-lg border opacity-50">
+                  <div className="flex items-center mb-2">
+                    <Target className="h-5 w-5 text-primary mr-2" />
+                    <h3 className="font-medium">SEO Optimization</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Market analysis tools (Coming Soon)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Recent Generations */}
         <div className="bg-card border rounded-lg shadow-sm">
