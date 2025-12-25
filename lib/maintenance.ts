@@ -1,21 +1,30 @@
 // Maintenance mode configuration
 // Enable maintenance mode based on environment
 
-const isProductionDomain = () => {
+const isMaintenanceModeEnabled = () => {
   if (typeof window !== 'undefined') {
-    // Client-side check
+    // Client-side check - disable maintenance for staging domain
+    if (window.location.hostname === 'passinc.vercel.app') {
+      return false // Always allow staging environment
+    }
+    
+    // Enable maintenance for production domains
     return window.location.hostname === 'aipropertywriter.com' || 
            window.location.hostname === 'www.aipropertywriter.com'
   }
   
-  // Server-side check
-  return process.env.NEXT_PUBLIC_APP_URL === 'https://aipropertywriter.com' ||
-         process.env.NEXT_PUBLIC_APP_URL === 'https://www.aipropertywriter.com' ||
-         process.env.VERCEL_ENV === 'production'
+  // Server-side check - disable for Vercel staging URLs
+  const url = process.env.NEXT_PUBLIC_APP_URL || ''
+  if (url.includes('passinc.vercel.app') || url.includes('vercel.app')) {
+    return false // Always allow staging/preview deployments
+  }
+  
+  // Enable maintenance for production domains
+  return url.includes('aipropertywriter.com')
 }
 
-// Enable maintenance mode only for production domain
-export const MAINTENANCE_MODE_ENABLED = isProductionDomain()
+// Enable maintenance mode only for production domain, never for staging
+export const MAINTENANCE_MODE_ENABLED = isMaintenanceModeEnabled()
 
 export const MAINTENANCE_CONFIG = {
   title: "We're Getting Ready!",
