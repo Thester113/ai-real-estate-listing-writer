@@ -35,6 +35,30 @@ export async function getProfile(userId: string) {
     .eq('id', userId)
     .single()
   
+  // If profile doesn't exist, create one
+  if (error && error.code === 'PGRST116') {
+    console.log('Profile not found, creating new profile for user:', userId)
+    
+    // Get user info from auth
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
+    
+    // Create profile
+    const { data: newProfile, error: createError } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || '',
+        plan: 'starter'
+      })
+      .select('*')
+      .single()
+    
+    if (createError) throw createError
+    return newProfile
+  }
+  
   if (error) throw error
   return data
 }
