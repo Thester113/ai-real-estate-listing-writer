@@ -67,7 +67,7 @@ jobs:
           echo "Deployed to: $DEPLOYMENT_URL"
 
       - name: Upload Source Maps to Sentry
-        if: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        if: false  # Temporarily disabled
         run: |
           if [ -n "${{ secrets.SENTRY_AUTH_TOKEN }}" ]; then
             npx @sentry/cli releases new ${{ github.sha }}
