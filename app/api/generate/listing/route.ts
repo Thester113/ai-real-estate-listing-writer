@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     const wordCount = countWords(result)
 
     // Save generation to database
-    const { error: saveError } = await supabaseAdmin
+    const { error: saveError } = await (supabaseAdmin as any)
       .from('generations')
       .insert({
         user_id: user.id,
