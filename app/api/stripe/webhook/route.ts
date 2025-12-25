@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
       eventType: event?.type,
-      eventId: event?.id
+      eventId: (event as any)?.id
     })
     return secureJsonResponse({ 
       error: 'Webhook processing failed',
