@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   
   // Test database connection
   try {
-    const { data, error } = await (supabaseAdmin as any).from('generations').select('count(*)').limit(1)
+    const { data, error } = await (supabaseAdmin as any).from('generations').select('*').limit(1)
     console.log('📊 Database test result:', { data, error })
     
     const body = await request.json()
