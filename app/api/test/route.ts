@@ -26,7 +26,13 @@ export async function POST(request: NextRequest) {
       received: body,
       timestamp: new Date().toISOString(),
       database: error ? 'error' : 'connected',
-      dbResult: data
+      dbResult: data,
+      dbError: error ? {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      } : null
     })
   } catch (error) {
     console.error('Database test failed:', error)
