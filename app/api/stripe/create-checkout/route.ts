@@ -59,7 +59,31 @@ export async function POST(request: NextRequest) {
     const userProfile = profile as any
 
     if (userProfile.customer_id) {
-      customerId = userProfile.customer_id
+      // Check if the customer ID matches the current Stripe mode
+      // Test mode customer IDs start with 'cus_' but live mode ones exist in different environment
+      try {
+        // Try to retrieve the customer to verify it exists in current mode
+        await stripe.customers.retrieve(userProfile.customer_id)
+        customerId = userProfile.customer_id
+      } catch (stripeError: any) {
+        // If customer doesn't exist in current mode, create a new one
+        console.log('Customer ID mode mismatch, creating new customer:', stripeError.message)
+        const customer = await stripe.customers.create({
+          email: user.email || userProfile.email,
+          metadata: {
+            supabase_user_id: user.id,
+            previous_customer_id: userProfile.customer_id // Keep track of old ID
+          }
+        })
+        
+        customerId = customer.id
+        
+        // Update profile with new customer ID for current mode
+        await (supabaseAdmin as any)
+          .from('profiles')
+          .update({ customer_id: customerId })
+          .eq('id', user.id)
+      }
     } else {
       // Create new Stripe customer
       const customer = await stripe.customers.create({
