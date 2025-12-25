@@ -114,6 +114,15 @@ export async function POST(request: NextRequest) {
         } else {
           console.log('✅ Generation saved to database successfully!')
           console.log('✅ Saved data:', insertResult)
+          
+          // Update usage stats
+          try {
+            const { incrementUsage } = await import('@/lib/supabase-client')
+            await incrementUsage(userId, 1, 50)
+            console.log('✅ Usage stats updated successfully!')
+          } catch (usageError) {
+            console.error('⚠️ Failed to update usage stats:', usageError)
+          }
         }
       } catch (error) {
         console.error('❌ Database save exception:', error)
