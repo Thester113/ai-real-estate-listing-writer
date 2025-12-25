@@ -1,5 +1,6 @@
 // ConvertKit API integration for email marketing
 const CONVERTKIT_API_KEY = process.env.CONVERTKIT_API_KEY
+const CONVERTKIT_API_SECRET = process.env.CONVERTKIT_API_SECRET
 const CONVERTKIT_FORM_ID = process.env.CONVERTKIT_FORM_ID
 const CONVERTKIT_API_URL = 'https://api.convertkit.com/v3'
 
@@ -31,8 +32,8 @@ export async function subscribeToConvertKit({
   tags = [],
   customFields = {}
 }: ConvertKitSubscriber): Promise<ConvertKitResponse> {
-  if (!CONVERTKIT_API_KEY || !CONVERTKIT_FORM_ID) {
-    console.error('ConvertKit: Missing API key or form ID')
+  if (!CONVERTKIT_API_KEY || !CONVERTKIT_API_SECRET || !CONVERTKIT_FORM_ID) {
+    console.error('ConvertKit: Missing API key, secret, or form ID')
     return { success: false, error: 'ConvertKit not configured' }
   }
 
@@ -43,6 +44,7 @@ export async function subscribeToConvertKit({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONVERTKIT_API_SECRET}`
       },
       body: JSON.stringify({
         api_key: CONVERTKIT_API_KEY,
@@ -81,8 +83,8 @@ export async function subscribeToConvertKit({
  * Add tags to an existing subscriber
  */
 export async function addTagsToSubscriber(email: string, tags: string[]): Promise<ConvertKitResponse> {
-  if (!CONVERTKIT_API_KEY || tags.length === 0) {
-    return { success: false, error: 'Missing API key or tags' }
+  if (!CONVERTKIT_API_KEY || !CONVERTKIT_API_SECRET || tags.length === 0) {
+    return { success: false, error: 'Missing API key, secret, or tags' }
   }
 
   try {
@@ -92,6 +94,7 @@ export async function addTagsToSubscriber(email: string, tags: string[]): Promis
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONVERTKIT_API_SECRET}`
       },
       body: JSON.stringify({
         api_key: CONVERTKIT_API_KEY,
