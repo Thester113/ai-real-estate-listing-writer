@@ -163,13 +163,13 @@ export async function POST(request: NextRequest) {
         slug: uniqueSlug,
         content: result.content,
         excerpt: result.excerpt,
-        tags: result.tags,
         published: true,
         metadata: {
           author: body.author,
           category: body.category,
           readTime: readTime,
           keywords: body.keywords,
+          tags: result.tags,
           seo_title: result.seo_title,
           seo_description: result.seo_description
         }
