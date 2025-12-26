@@ -91,8 +91,14 @@ export function getTokenLimit(plan: 'starter' | 'pro'): number {
 
 // CORS headers for API routes
 export function getCorsHeaders() {
+  // Security: Never use wildcard in production
+  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL
+  if (!allowedOrigin && process.env.NODE_ENV === 'production') {
+    throw new Error('NEXT_PUBLIC_APP_URL must be set in production for CORS security')
+  }
+
   return {
-    'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL || '*',
+    'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:3000',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',

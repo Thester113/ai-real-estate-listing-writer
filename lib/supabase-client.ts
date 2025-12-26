@@ -1,19 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
-// Hardcoded values - no environment variables
-const SUPABASE_URL = 'https://vhobxnavetcsyzgdnedi.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MTQ3NzIsImV4cCI6MjA4MjE5MDc3Mn0.cVORCtqywiaINUs3aD6gqSKEQn7qgy_1fSxd2SFNQ7E'
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZob2J4bmF2ZXRjc3l6Z2RuZWRpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjYxNDc3MiwiZXhwIjoyMDgyMTkwNzcyfQ.JjJYJpWUSsEqpG5XmJdJYwhIEPpD-HyfgeSXkJBbQWQ'
+// Security: Use environment variables instead of hardcoded credentials
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-console.log('🚀 FRESH DEPLOY - Creating Supabase clients with hardcoded values - ' + new Date().toISOString())
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing required Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+}
 
-// Create client instances directly
+if (!SUPABASE_SERVICE_KEY) {
+  console.warn('Warning: SUPABASE_SERVICE_ROLE_KEY is not set. Admin operations will fail.')
+}
+
+// Create client instances securely from environment variables
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 export const supabaseAdmin = createClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_KEY,
+  SUPABASE_URL!,
+  SUPABASE_SERVICE_KEY!,
   {
     auth: {
       autoRefreshToken: false,
@@ -112,5 +118,3 @@ export async function incrementUsage(userId: string, listings: number = 1, words
   }
   return data
 }
-
-console.log('NEW SUPABASE CLIENT FILE - Clients created successfully')

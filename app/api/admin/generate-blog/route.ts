@@ -139,7 +139,42 @@ export async function POST(request: NextRequest) {
   console.log('📝 Blog generation API called!')
 
   try {
+    // Security: Require CRON_SECRET or admin authentication
+    const authHeader = request.headers.get('authorization')
+    const cronSecret = process.env.CRON_SECRET
+
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      console.error('[ADMIN] Unauthorized access attempt to blog generation endpoint')
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json() as BlogTopicData
+
+    // Input validation
+    if (!body.title || !body.keywords || !body.category || !body.author) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields: title, keywords, category, author'
+      }, { status: 400 })
+    }
+
+    // Validate input lengths to prevent abuse
+    if (body.title.length > 200) {
+      return NextResponse.json({
+        success: false,
+        error: 'Title too long (max 200 characters)'
+      }, { status: 400 })
+    }
+
+    if (!Array.isArray(body.keywords) || body.keywords.length === 0 || body.keywords.length > 10) {
+      return NextResponse.json({
+        success: false,
+        error: 'Keywords must be an array with 1-10 items'
+      }, { status: 400 })
+    }
 
     console.log('📦 Generating blog post:', body.title)
 

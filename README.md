@@ -1,178 +1,206 @@
-# Supabase CLI
+# AI Property Writer
 
-[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
-](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
+Generate professional real estate listing copy, MLS descriptions, social posts, and property marketing emails in seconds using AI.
 
-[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
+## What is AI Property Writer?
 
-This repository contains all the functionality for Supabase CLI.
+AI Property Writer is a SaaS application that helps real estate agents create compelling property listings and marketing content instantly. Built with Next.js 14, it uses OpenAI's GPT models to generate tailored copy based on property details, target audience, and desired tone.
 
-- [x] Running Supabase locally
-- [x] Managing database migrations
-- [x] Creating and deploying Supabase Functions
-- [x] Generating types directly from your database schema
-- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
+**Features:**
+- 🏡 AI-powered listing generation
+- 📝 Multiple output types (MLS descriptions, social posts, emails)
+- 💳 Subscription-based pricing (Starter/Pro tiers)
+- 📊 Usage tracking and limits
+- 📰 Automated SEO blog system
+- 📧 Email marketing integration (ConvertKit)
+- 🔐 Secure authentication via Supabase
+- 💰 Stripe payment processing
 
-## Getting started
+## Tech Stack
 
-### Install the CLI
+- **Framework:** Next.js 14 (App Router)
+- **Database:** Supabase (PostgreSQL + Auth)
+- **Payments:** Stripe
+- **AI:** OpenAI GPT-4
+- **Email:** ConvertKit + Gmail SMTP
+- **Deployment:** Vercel
+- **Styling:** Tailwind CSS + Radix UI
+- **Analytics:** PostHog + Sentry
 
-Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
+## Quick Start
 
-```bash
-npm i supabase --save-dev
-```
+### Prerequisites
 
-When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
+- Node.js >= 18.17.0
+- npm or yarn
+- Vercel CLI
+- Supabase CLI
+- Stripe CLI
+- jq (for JSON parsing)
 
-```
-NODE_OPTIONS=--no-experimental-fetch yarn add supabase
-```
+### Installation
 
-> **Note**
-For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd passinc
+   ```
 
-<details>
-  <summary><b>macOS</b></summary>
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-  Available via [Homebrew](https://brew.sh). To install:
+3. **Run the bootstrap setup**
+   ```bash
+   npm run bootstrap
+   ```
 
-  ```sh
-  brew install supabase/tap/supabase
-  ```
+   This interactive script will:
+   - Validate required CLI tools
+   - Guide you through environment variable setup
+   - Link your Vercel project
+   - Push database schema to Supabase
+   - Create Stripe products and prices
+   - Optionally deploy to production
 
-  To install the beta release channel:
-  
-  ```sh
-  brew install supabase/tap/supabase-beta
-  brew link --overwrite supabase-beta
-  ```
-  
-  To upgrade:
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-  ```sh
-  brew upgrade supabase
-  ```
-</details>
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-<details>
-  <summary><b>Windows</b></summary>
+### Manual Setup
 
-  Available via [Scoop](https://scoop.sh). To install:
+If you prefer manual setup over the bootstrap script:
 
-  ```powershell
-  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-  scoop install supabase
-  ```
+1. Copy `.env.example` to `.env.local` and fill in your values:
+   ```bash
+   cp .env.example .env.local
+   ```
 
-  To upgrade:
+2. Configure your environment variables (see `.env.example` for details)
 
-  ```powershell
-  scoop update supabase
-  ```
-</details>
+3. Push database schema:
+   ```bash
+   npm run migrate
+   ```
 
-<details>
-  <summary><b>Linux</b></summary>
+4. Set up Stripe products:
+   ```bash
+   npm run stripe:setup
+   ```
 
-  Available via [Homebrew](https://brew.sh) and Linux packages.
+5. Deploy to Vercel:
+   ```bash
+   npm run deploy
+   ```
 
-  #### via Homebrew
-
-  To install:
-
-  ```sh
-  brew install supabase/tap/supabase
-  ```
-
-  To upgrade:
-
-  ```sh
-  brew upgrade supabase
-  ```
-
-  #### via Linux packages
-
-  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
-
-  ```sh
-  sudo apk add --allow-untrusted <...>.apk
-  ```
-
-  ```sh
-  sudo dpkg -i <...>.deb
-  ```
-
-  ```sh
-  sudo rpm -i <...>.rpm
-  ```
-
-  ```sh
-  sudo pacman -U <...>.pkg.tar.zst
-  ```
-</details>
-
-<details>
-  <summary><b>Other Platforms</b></summary>
-
-  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
-
-  ```sh
-  go install github.com/supabase/cli@latest
-  ```
-
-  Add a symlink to the binary in `$PATH` for easier access:
-
-  ```sh
-  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
-  ```
-
-  This works on other non-standard Linux distros.
-</details>
-
-<details>
-  <summary><b>Community Maintained Packages</b></summary>
-
-  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
-  To install in your working directory:
-
-  ```bash
-  pkgx install supabase
-  ```
-
-  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
-</details>
-
-### Run the CLI
+## Development
 
 ```bash
-supabase bootstrap
+# Start dev server
+npm run dev
+
+# Run tests
+npm run test
+npm run test:watch
+npm run test:coverage
+
+# Type checking and linting
+npm run typecheck
+npm run lint
+
+# Database operations
+npm run migrate        # Push schema changes
+npm run seed          # Seed sample data
+
+# Build for production
+npm run build
+npm start
 ```
 
-Or using npx:
+## Environment Variables
+
+Required environment variables:
+
+- `OPENAI_API_KEY` - OpenAI API key for listing generation
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+- `STRIPE_SECRET_KEY` - Stripe secret key (test or live)
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
+- `STRIPE_WEBHOOK_SECRET` - Stripe webhook signing secret
+- `CONVERTKIT_API_KEY` - ConvertKit API key
+- `CONVERTKIT_FORM_ID` - ConvertKit form ID
+
+See `.env.example` for all available configuration options.
+
+## Project Structure
+
+```
+passinc/
+├── app/                    # Next.js 14 app directory
+│   ├── api/               # API routes
+│   ├── dashboard/         # User dashboard
+│   ├── blog/              # Blog pages
+│   └── ...                # Other pages
+├── components/            # React components
+├── lib/                   # Shared utilities and configs
+├── supabase/             # Database schema and migrations
+├── scripts/              # Setup and maintenance scripts
+├── email-templates/      # Email HTML templates
+└── types/                # TypeScript type definitions
+```
+
+## Deployment
+
+The app is designed to deploy on Vercel:
 
 ```bash
-npx supabase bootstrap
+npm run deploy
 ```
 
-The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+### Vercel Configuration
 
-## Docs
+- Function timeouts configured in `vercel.json`
+- Cron jobs for weekly blog generation and email digests
+- Environment variables must be set in Vercel dashboard
 
-Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+### Database Migrations
 
-## Breaking changes
+Push schema changes to Supabase:
 
-We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
-
-However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
-
-## Developing
-
-To run from source:
-
-```sh
-# Go >= 1.22
-go run . help
+```bash
+npm run migrate
 ```
-# Wed Dec 24 19:43:34 MST 2025
+
+## Testing Webhooks Locally
+
+To test Stripe webhooks in development:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Update your `.env.local` with the webhook signing secret provided by the CLI.
+
+## Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** - Comprehensive developer guide and architecture documentation
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment guide
+- **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Supabase configuration details
+- **[CONVERTKIT_SETUP_GUIDE.md](./CONVERTKIT_SETUP_GUIDE.md)** - Email marketing setup
+
+## License
+
+See [LICENSE](./LICENSE) file for details.
+
+## Support
+
+For issues, questions, or contributions, please refer to the documentation files or contact the development team.
+
+---
+
+Built with ❤️ for real estate professionals

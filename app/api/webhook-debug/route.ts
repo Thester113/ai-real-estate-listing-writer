@@ -2,35 +2,39 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStripeConfig } from '@/lib/stripe-config'
 
 export async function GET(request: NextRequest) {
+  // Security: Only allow in development or with proper authentication
+  if (process.env.NODE_ENV === 'production') {
+    const authHeader = request.headers.get('authorization')
+    const debugSecret = process.env.DEBUG_SECRET
+
+    if (!debugSecret || authHeader !== `Bearer ${debugSecret}`) {
+      return NextResponse.json({
+        error: 'Unauthorized - debug endpoint disabled in production'
+      }, { status: 401 })
+    }
+  }
+
   try {
     const config = getStripeConfig()
-    
+
     return NextResponse.json({
       success: true,
       webhookSecretConfigured: !!config.webhookSecret,
       webhookSecretPrefix: config.webhookSecret ? config.webhookSecret.substring(0, 7) + '...' : 'MISSING',
       priceIdPro: config.priceIdPro || 'MISSING',
-      stripeMode: config.priceIdPro.includes('price_1SiK0mA7E1wLzQE1tnB5tf1W') ? 'test' : 'live', // Determine from cleaned config
       environment: {
-        STRIPE_MODE: process.env.STRIPE_MODE || 'MISSING',
+        STRIPE_MODE: process.env.STRIPE_MODE || 'test',
         STRIPE_TEST_WEBHOOK_SECRET: process.env.STRIPE_TEST_WEBHOOK_SECRET ? 'SET' : 'MISSING',
         STRIPE_LIVE_WEBHOOK_SECRET: process.env.STRIPE_LIVE_WEBHOOK_SECRET ? 'SET' : 'MISSING',
-        STRIPE_TEST_PRICE_ID_PRO: process.env.STRIPE_TEST_PRICE_ID_PRO || 'MISSING',
-        STRIPE_LIVE_PRICE_ID_PRO: process.env.STRIPE_LIVE_PRICE_ID_PRO || 'MISSING'
+        STRIPE_TEST_PRICE_ID_PRO: process.env.STRIPE_TEST_PRICE_ID_PRO ? 'SET' : 'MISSING',
+        STRIPE_LIVE_PRICE_ID_PRO: process.env.STRIPE_LIVE_PRICE_ID_PRO ? 'SET' : 'MISSING'
       },
-      rawValues: {
-        STRIPE_MODE_RAW: JSON.stringify(process.env.STRIPE_MODE),
-        STRIPE_TEST_WEBHOOK_SECRET_RAW: process.env.STRIPE_TEST_WEBHOOK_SECRET ? JSON.stringify(process.env.STRIPE_TEST_WEBHOOK_SECRET.substring(0, 15) + '...') : 'MISSING',
-        STRIPE_TEST_PRICE_ID_PRO_RAW: JSON.stringify(process.env.STRIPE_TEST_PRICE_ID_PRO)
-      },
+      // Security: Never expose full secrets
       cleanedValues: {
-        webhookSecret: config.webhookSecret.substring(0, 15) + '...',
-        webhookSecretFull: config.webhookSecret, // Show full secret for comparison
+        webhookSecretPrefix: config.webhookSecret.substring(0, 12) + '...',
         priceIdPro: config.priceIdPro,
-        secretKey: config.secretKey.substring(0, 7) + '...'
+        secretKeyPrefix: config.secretKey.substring(0, 7) + '...'
       },
-      expectedWebhookSecret: 'whsec_GGpQqRlkaCRbCTKHiYGCfW8Li3nTQqLj',
-      secretsMatch: config.webhookSecret === 'whsec_GGpQqRlkaCRbCTKHiYGCfW8Li3nTQqLj',
       webhookSecretLength: config.webhookSecret.length,
       priceIdLength: config.priceIdPro.length
     })

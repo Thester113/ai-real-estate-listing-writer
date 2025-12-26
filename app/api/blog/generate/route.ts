@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cronSecret}` // Pass through authentication
       },
       body: JSON.stringify({
         title: topic.title,

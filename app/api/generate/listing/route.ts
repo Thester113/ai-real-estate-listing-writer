@@ -206,12 +206,12 @@ Guidelines:
 
 export async function POST(request: NextRequest) {
   console.log('🚀 Generation API called!')
-  
+
   try {
     // Get auth header
     const authHeader = request.headers.get('authorization')
     console.log('🔑 Auth header exists:', !!authHeader)
-    
+
     if (!authHeader?.startsWith('Bearer ')) {
       console.log('❌ No valid authorization header')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -219,10 +219,88 @@ export async function POST(request: NextRequest) {
 
     console.log('📦 Parsing request body...')
     const body = await request.json()
-    console.log('📦 Body received:', { 
-      propertyType: body.propertyType, 
+
+    // Input validation
+    const requiredFields = ['propertyType', 'bedrooms', 'bathrooms', 'location', 'targetAudience']
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json({
+          success: false,
+          error: `Missing required field: ${field}`
+        }, { status: 400 })
+      }
+    }
+
+    // Type and range validation
+    if (typeof body.bedrooms !== 'number' || body.bedrooms < 0 || body.bedrooms > 50) {
+      return NextResponse.json({
+        success: false,
+        error: 'Bedrooms must be a number between 0 and 50'
+      }, { status: 400 })
+    }
+
+    if (typeof body.bathrooms !== 'number' || body.bathrooms < 0 || body.bathrooms > 50) {
+      return NextResponse.json({
+        success: false,
+        error: 'Bathrooms must be a number between 0 and 50'
+      }, { status: 400 })
+    }
+
+    if (body.squareFeet && (typeof body.squareFeet !== 'number' || body.squareFeet < 0 || body.squareFeet > 1000000)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Square feet must be a number between 0 and 1,000,000'
+      }, { status: 400 })
+    }
+
+    // String length validation
+    if (typeof body.propertyType !== 'string' || body.propertyType.length > 100) {
+      return NextResponse.json({
+        success: false,
+        error: 'Property type must be a string (max 100 characters)'
+      }, { status: 400 })
+    }
+
+    if (typeof body.location !== 'string' || body.location.length > 200) {
+      return NextResponse.json({
+        success: false,
+        error: 'Location must be a string (max 200 characters)'
+      }, { status: 400 })
+    }
+
+    if (typeof body.targetAudience !== 'string' || body.targetAudience.length > 200) {
+      return NextResponse.json({
+        success: false,
+        error: 'Target audience must be a string (max 200 characters)'
+      }, { status: 400 })
+    }
+
+    if (body.additionalDetails && (typeof body.additionalDetails !== 'string' || body.additionalDetails.length > 2000)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Additional details must be a string (max 2000 characters)'
+      }, { status: 400 })
+    }
+
+    // Features validation
+    if (body.features && (!Array.isArray(body.features) || body.features.length > 50)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Features must be an array (max 50 items)'
+      }, { status: 400 })
+    }
+
+    if (body.customKeywords && (typeof body.customKeywords !== 'string' || body.customKeywords.length > 500)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Custom keywords must be a string (max 500 characters)'
+      }, { status: 400 })
+    }
+
+    console.log('📦 Body received:', {
+      propertyType: body.propertyType,
       location: body.location,
-      features: body.features?.length 
+      features: body.features?.length
     })
 
     // Generate production-ready listing

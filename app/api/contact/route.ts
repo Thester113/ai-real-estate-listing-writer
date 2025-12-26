@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 
+// Helper function to escape HTML and prevent XSS
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Parse request body
@@ -11,6 +21,39 @@ export async function POST(request: NextRequest) {
     if (!name || !email || !subject || !message) {
       return NextResponse.json({
         error: 'All fields are required: name, email, subject, message'
+      }, { status: 400 })
+    }
+
+    // Type validation
+    if (typeof name !== 'string' || typeof email !== 'string' ||
+        typeof subject !== 'string' || typeof message !== 'string') {
+      return NextResponse.json({
+        error: 'All fields must be strings'
+      }, { status: 400 })
+    }
+
+    // Length validation to prevent abuse
+    if (name.length > 100) {
+      return NextResponse.json({
+        error: 'Name is too long (max 100 characters)'
+      }, { status: 400 })
+    }
+
+    if (email.length > 254) { // RFC 5321
+      return NextResponse.json({
+        error: 'Email is too long'
+      }, { status: 400 })
+    }
+
+    if (subject.length > 200) {
+      return NextResponse.json({
+        error: 'Subject is too long (max 200 characters)'
+      }, { status: 400 })
+    }
+
+    if (message.length > 5000) {
+      return NextResponse.json({
+        error: 'Message is too long (max 5000 characters)'
       }, { status: 400 })
     }
 
@@ -37,13 +80,13 @@ export async function POST(request: NextRequest) {
           from: `"AI PropertyWriter" <${process.env.GMAIL_USER}>`,
           to: 'support@aipropertywriter.com',
           replyTo: email,
-          subject: `Contact Form: ${subject}`,
+          subject: `Contact Form: ${escapeHtml(subject)}`,
           html: `
             <h2>New Contact Form Submission</h2>
-            <p><strong>From:</strong> ${name} (${email})</p>
-            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>From:</strong> ${escapeHtml(name)} (${escapeHtml(email)})</p>
+            <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
             <p><strong>Message:</strong></p>
-            <p>${message.replace(/\n/g, '<br>')}</p>
+            <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
             <hr>
             <p><small>Submitted: ${new Date().toLocaleString()}</small></p>
           `,
