@@ -12,26 +12,29 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'AI PropertyWriter - AI Real Estate Listing Writer',
-    template: '%s | AI PropertyWriter'
+    default: 'AI Property Writer – Generate Real Estate Listing Copy Instantly',
+    template: '%s | AI Property Writer'
   },
-  description: 'Generate compelling real estate listings with AI. Transform property details into professional, engaging descriptions that attract buyers.',
-  keywords: ['real estate', 'AI', 'listings', 'property descriptions', 'real estate marketing', 'AI property writer', 'artificial intelligence'],
+  description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds. AIPropertyWriter helps real estate agents market properties faster with AI.',
+  keywords: ['AI real estate listing writer', 'MLS description generator', 'real estate listing copy', 'property marketing AI', 'real estate copywriting', 'listing generator', 'real estate marketing'],
   authors: [{ name: 'AI PropertyWriter' }],
   creator: 'AI PropertyWriter',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'),
+  alternates: {
+    canonical: 'https://www.aipropertywriter.com',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_APP_URL,
-    title: 'AI PropertyWriter - AI Real Estate Listing Writer',
-    description: 'Generate compelling real estate listings with AI',
-    siteName: 'AI PropertyWriter',
+    url: 'https://www.aipropertywriter.com',
+    title: 'AI Property Writer – Generate Real Estate Listing Copy Instantly',
+    description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds. AIPropertyWriter helps real estate agents market properties faster with AI.',
+    siteName: 'AI Property Writer',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI PropertyWriter - AI Real Estate Listing Writer',
-    description: 'Generate compelling real estate listings with AI',
+    title: 'AI Property Writer – Generate Real Estate Listing Copy Instantly',
+    description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds.',
   },
   robots: {
     index: true,

@@ -79,10 +79,10 @@ export default async function BlogPage() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Real Estate Marketing Insights
+            Real Estate Marketing Blog
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Expert tips, strategies, and industry insights to help you create better listings and grow your business
+            Expert tips, strategies, and industry insights for creating better property listings and growing your real estate business
           </p>
         </div>
       </section>

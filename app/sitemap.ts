@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { supabaseAdmin } from '@/lib/supabase-client'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aipropertywriter.com'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [

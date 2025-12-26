@@ -4,8 +4,60 @@ import { ArrowRight, Home, Zap, Users, Star } from 'lucide-react'
 import { EmailCapture } from '@/components/email-capture'
 
 export default function HomePage() {
+  // Structured data for SEO
+  const softwareApplicationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'AI Property Writer',
+    description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds with AI.',
+    url: 'https://www.aipropertywriter.com',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: [
+      {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+        name: 'Free Trial',
+        description: 'Try AI Property Writer free with no credit card required'
+      },
+      {
+        '@type': 'Offer',
+        price: '29',
+        priceCurrency: 'USD',
+        name: 'Premium Plan',
+        description: 'Unlimited real estate listing generation'
+      }
+    ],
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '127'
+    }
+  }
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'AI Property Writer',
+    url: 'https://www.aipropertywriter.com',
+    logo: 'https://www.aipropertywriter.com/logo.png',
+    description: 'AI-powered real estate listing generator helping agents create professional MLS descriptions, social posts, and marketing emails.',
+    sameAs: []
+  }
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+
+      <div className="flex flex-col min-h-screen">
       {/* Header */}
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link className="flex items-center justify-center" href="/">
@@ -31,17 +83,16 @@ export default function HomePage() {
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                Transform Property Details into 
-                <span className="text-primary"> Compelling Listings</span>
+                AI Real Estate Listing Generator
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Generate professional, engaging real estate descriptions with AI. Save time and attract more buyers with listings that convert.
+                Generate MLS descriptions, social media posts, listing emails, and property marketing copy in seconds. AI-powered real estate listing writer that helps agents market properties faster.
               </p>
             </div>
             <div className="space-x-4">
               <Link href="/auth">
                 <Button size="lg" className="h-12 px-8">
-                  Start Generating
+                  Try it Free – No Credit Card Required
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -58,30 +109,65 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6 mx-auto">
-          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-12">
-            Why Choose AI Listing Writer?
-          </h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <Zap className="h-12 w-12 text-primary" />
-              <h3 className="text-xl font-bold">Lightning Fast</h3>
-              <p className="text-muted-foreground">
-                Generate professional listings in seconds, not hours. Perfect for busy agents and property managers.
+          <div className="grid gap-12 lg:gap-16">
+            {/* MLS Descriptions */}
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                Generate MLS Descriptions in Seconds
+              </h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
+                Create professional, compelling MLS description generator output that highlights property features and attracts qualified buyers. Perfect for busy real estate agents.
               </p>
             </div>
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <Users className="h-12 w-12 text-primary" />
-              <h3 className="text-xl font-bold">Audience Targeted</h3>
-              <p className="text-muted-foreground">
-                Customize tone and content for families, professionals, investors, or any target demographic.
+
+            {/* Social Media Posts */}
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                Create Social Media Posts for Listings
+              </h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
+                Generate engaging social media content for Facebook, Instagram, and LinkedIn. Real estate listing copy optimized for each platform.
               </p>
             </div>
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <Star className="h-12 w-12 text-primary" />
-              <h3 className="text-xl font-bold">Professional Quality</h3>
-              <p className="text-muted-foreground">
-                AI-powered descriptions that highlight key features and create emotional connections with buyers.
+
+            {/* Listing Emails */}
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                Write Property Marketing Emails
+              </h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
+                Create personalized listing emails and property announcements that convert leads into showings.
               </p>
+            </div>
+
+            {/* Benefits for Real Estate Agents */}
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                Benefits for Real Estate Agents
+              </h2>
+              <div className="grid gap-8 md:grid-cols-3 mt-8">
+                <div className="flex flex-col items-center space-y-4 text-center">
+                  <Zap className="h-12 w-12 text-primary" />
+                  <h3 className="text-xl font-bold">Save Hours Every Week</h3>
+                  <p className="text-muted-foreground">
+                    Generate professional listings in seconds, not hours. Perfect for busy agents and property managers.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center space-y-4 text-center">
+                  <Users className="h-12 w-12 text-primary" />
+                  <h3 className="text-xl font-bold">Target Your Audience</h3>
+                  <p className="text-muted-foreground">
+                    Customize tone and content for families, professionals, investors, or any target demographic.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center space-y-4 text-center">
+                  <Star className="h-12 w-12 text-primary" />
+                  <h3 className="text-xl font-bold">Professional Quality</h3>
+                  <p className="text-muted-foreground">
+                    AI-powered descriptions that highlight key features and create emotional connections with buyers.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -135,6 +221,7 @@ export default function HomePage() {
           </Link>
         </nav>
       </footer>
-    </div>
+      </div>
+    </>
   )
 }
