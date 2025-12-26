@@ -10,7 +10,8 @@ import fetch from 'node-fetch'
 // @ts-ignore
 global.fetch = fetch
 
-const API_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Use production URL by default, fallback to localhost for local development
+const API_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com';
 
 const blogTopics = [
   {
