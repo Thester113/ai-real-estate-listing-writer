@@ -78,7 +78,7 @@ export async function generateStaticParams() {
     .select('slug')
     .eq('published', true)
 
-  return posts?.map((post) => ({
+  return posts?.map((post: any) => ({
     slug: post.slug,
   })) || []
 }
