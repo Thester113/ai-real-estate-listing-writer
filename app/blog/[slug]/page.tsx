@@ -29,7 +29,7 @@ interface BlogPost {
 }
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await (supabaseAdmin as any)
     .from('blog_posts')
     .select('*')
     .eq('slug', slug)
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export async function generateStaticParams() {
-  const { data: posts } = await supabaseAdmin
+  const { data: posts } = await (supabaseAdmin as any)
     .from('blog_posts')
     .select('slug')
     .eq('published', true)

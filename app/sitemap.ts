@@ -63,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // Get published blog posts from database
-  const { data: posts } = await supabaseAdmin
+  const { data: posts } = await (supabaseAdmin as any)
     .from('blog_posts')
     .select('slug, updated_at')
     .eq('published', true)

@@ -29,7 +29,7 @@ interface BlogPost {
 }
 
 async function getBlogPosts(): Promise<BlogPost[]> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await (supabaseAdmin as any)
     .from('blog_posts')
     .select('id, title, slug, excerpt, published_at, tags, metadata')
     .eq('published', true)

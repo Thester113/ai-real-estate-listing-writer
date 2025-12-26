@@ -97,7 +97,7 @@ function calculateReadTime(htmlContent: string): string {
 }
 
 async function checkSlugExists(slug: string): Promise<boolean> {
-  const { data } = await supabaseAdmin
+  const { data } = await (supabaseAdmin as any)
     .from('blog_posts')
     .select('id')
     .eq('slug', slug)
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Blog post generated, slug:', uniqueSlug)
 
     // Save to database
-    const { data: insertResult, error: saveError } = await supabaseAdmin
+    const { data: insertResult, error: saveError } = await (supabaseAdmin as any)
       .from('blog_posts')
       .insert({
         title: result.title,
