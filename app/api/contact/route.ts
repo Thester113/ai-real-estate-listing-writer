@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { trackServerEvent } from '@/lib/analytics'
-import { getErrorMessage } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
   try {
-    // Basic validation - rate limiting handled by middleware
-
     // Parse request body
     const body = await request.json()
     const { name, email, subject, message } = body
@@ -24,8 +20,6 @@ export async function POST(request: NextRequest) {
         error: 'Please provide a valid email address'
       }, { status: 400 })
     }
-
-    // Rate limiting check could be added here
 
     // Send to ConvertKit as a lead with contact form tag
     const convertKitApiKey = process.env.CONVERTKIT_API_KEY
@@ -56,18 +50,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Track contact form submission
-    trackServerEvent('contact_form_submitted', {
-      email,
-      subject,
-      message_length: message.length,
-      timestamp: new Date().toISOString()
-    })
-
-    // In a production app, you might also:
-    // 1. Send email notification to support team
-    // 2. Store the message in a database
-    // 3. Send auto-reply to the user
+    console.log('Contact form submitted:', { email, subject, name })
 
     return NextResponse.json({
       success: true,
@@ -79,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      error: getErrorMessage(error),
+      error: error instanceof Error ? error.message : 'An unknown error occurred',
       message: 'Failed to send message. Please try again.'
     }, { status: 500 })
   }
