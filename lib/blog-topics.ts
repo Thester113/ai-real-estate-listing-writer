@@ -88,11 +88,24 @@ export async function markTopicUsed(topicId: string): Promise<void> {
   try {
     const now = new Date().toISOString()
 
+    // First, get the current usage_count
+    const { data: topic, error: fetchError } = await (supabaseAdmin as any)
+      .from('blog_topics')
+      .select('usage_count')
+      .eq('id', topicId)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching topic for update:', fetchError)
+      throw new Error(`Failed to fetch topic: ${fetchError.message}`)
+    }
+
+    // Update with incremented usage_count
     const { error } = await (supabaseAdmin as any)
       .from('blog_topics')
       .update({
         last_used_at: now,
-        usage_count: (supabaseAdmin as any).raw('usage_count + 1'),
+        usage_count: (topic.usage_count || 0) + 1,
         updated_at: now
       })
       .eq('id', topicId)
