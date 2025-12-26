@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
   seo_title TEXT,
   seo_description TEXT,
   tags TEXT[] DEFAULT '{}',
+  metadata JSONB DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   published_at TIMESTAMP WITH TIME ZONE

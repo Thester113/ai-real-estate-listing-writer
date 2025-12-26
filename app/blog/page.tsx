@@ -105,52 +105,63 @@ export default async function BlogPage() {
           </div>
 
           {/* Featured Post */}
-          <div className="mb-12">
-            <div className="bg-card border rounded-lg shadow-lg overflow-hidden">
-              <div className="md:flex">
-                <div className="md:w-1/2">
-                  <div className="h-64 md:h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                    <div className="text-6xl text-primary/40">📝</div>
-                  </div>
-                </div>
-                <div className="md:w-1/2 p-8">
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-3">
-                    <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium">Featured</span>
-                    <span>{blogPosts[0].metadata?.category || 'Article'}</span>
-                  </div>
-                  <h2 className="text-2xl font-bold mb-3">
-                    <Link href={`/blog/${blogPosts[0].slug}`} className="hover:text-primary transition-colors">
-                      {blogPosts[0].title}
-                    </Link>
-                  </h2>
-                  <p className="text-muted-foreground mb-4">
-                    {blogPosts[0].excerpt}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-1" />
-                        {blogPosts[0].metadata?.author || 'AI PropertyWriter'}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {formatDate(blogPosts[0].published_at)}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {blogPosts[0].metadata?.readTime || '5 min read'}
-                      </div>
+          {blogPosts.length > 0 && (
+            <div className="mb-12">
+              <div className="bg-card border rounded-lg shadow-lg overflow-hidden">
+                <div className="md:flex">
+                  <div className="md:w-1/2">
+                    <div className="h-64 md:h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <div className="text-6xl text-primary/40">📝</div>
                     </div>
-                    <Button asChild size="sm">
-                      <Link href={`/blog/${blogPosts[0].slug}`}>
-                        Read More
+                  </div>
+                  <div className="md:w-1/2 p-8">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-3">
+                      <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium">Featured</span>
+                      <span>{blogPosts[0].metadata?.category || 'Article'}</span>
+                    </div>
+                    <h2 className="text-2xl font-bold mb-3">
+                      <Link href={`/blog/${blogPosts[0].slug}`} className="hover:text-primary transition-colors">
+                        {blogPosts[0].title}
                       </Link>
-                    </Button>
+                    </h2>
+                    <p className="text-muted-foreground mb-4">
+                      {blogPosts[0].excerpt}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-1" />
+                          {blogPosts[0].metadata?.author || 'AI PropertyWriter'}
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {formatDate(blogPosts[0].published_at)}
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {blogPosts[0].metadata?.readTime || '5 min read'}
+                        </div>
+                      </div>
+                      <Button asChild size="sm">
+                        <Link href={`/blog/${blogPosts[0].slug}`}>
+                          Read More
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Empty State */}
+          {blogPosts.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📝</div>
+              <h2 className="text-2xl font-bold mb-2">No blog posts yet</h2>
+              <p className="text-muted-foreground">Check back soon for real estate marketing insights and tips!</p>
+            </div>
+          )}
 
           {/* Blog Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
