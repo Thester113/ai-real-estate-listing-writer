@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +22,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         error: 'Please provide a valid email address'
       }, { status: 400 })
+    }
+
+    // Send email notification to support team
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: 'AI PropertyWriter <noreply@aipropertywriter.com>',
+          to: 'support@aipropertywriter.com',
+          replyTo: email,
+          subject: `Contact Form: ${subject}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <p><strong>From:</strong> ${name} (${email})</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Message:</strong></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+            <hr>
+            <p><small>Submitted: ${new Date().toLocaleString()}</small></p>
+          `
+        })
+        console.log('Email notification sent to support@aipropertywriter.com')
+      } catch (emailError) {
+        console.error('Resend email error:', emailError)
+        // Don't fail the request if email fails, but log it
+      }
+    } else {
+      console.warn('RESEND_API_KEY not configured - email notification skipped')
     }
 
     // Send to ConvertKit as a lead with contact form tag
