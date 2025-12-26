@@ -3,13 +3,18 @@ import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-client'
 import { secureJsonResponse } from '@/lib/security'
 import { getErrorMessage } from '@/lib/utils'
+import { stripeConfig, validateStripeConfig, isStripeInLiveMode } from '@/lib/stripe-config'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+// Move Stripe initialization to request time
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate config and create Stripe instance at request time
+    const config = validateStripeConfig()
+    const stripe = new Stripe(config.secretKey, {
+      apiVersion: '2023-10-16',
+    })
+
     // Basic validation - rate limiting handled by middleware
 
     // Get user session
