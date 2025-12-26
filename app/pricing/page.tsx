@@ -246,7 +246,7 @@ export default function PricingPage() {
         name: 'What happens if I exceed my limits?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'You'll be notified when you're approaching your limits. Once reached, you'll need to upgrade or wait until your next billing cycle.'
+          text: "You'll be notified when you're approaching your limits. Once reached, you'll need to upgrade or wait until your next billing cycle."
         }
       },
       {
@@ -262,7 +262,7 @@ export default function PricingPage() {
         name: 'Can I cancel anytime?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Absolutely. You can cancel your subscription anytime from the billing portal. You'll continue to have access until your current period ends.'
+          text: "Absolutely. You can cancel your subscription anytime from the billing portal. You'll continue to have access until your current period ends."
         }
       }
     ]
