@@ -58,6 +58,8 @@ async function generateBlogPost(topic: typeof blogTopics[0]) {
   console.log(`   Author: ${topic.author}`);
 
   try {
+    console.log(`   🔗 Calling: ${API_URL}/api/admin/generate-blog`);
+
     const response = await fetch(`${API_URL}/api/admin/generate-blog`, {
       method: 'POST',
       headers: {
@@ -66,10 +68,13 @@ async function generateBlogPost(topic: typeof blogTopics[0]) {
       body: JSON.stringify(topic)
     });
 
+    console.log(`   📡 Response status: ${response.status}`);
+
     const result = await response.json();
+    console.log(`   📦 Response:`, result);
 
     if (!response.ok) {
-      throw new Error(result.error || `HTTP ${response.status}`);
+      throw new Error(result.error || result.message || `HTTP ${response.status}`);
     }
 
     if (result.success) {
@@ -82,6 +87,9 @@ async function generateBlogPost(topic: typeof blogTopics[0]) {
     }
   } catch (error) {
     console.error(`   ❌ Failed:`, error instanceof Error ? error.message : error);
+    if (error instanceof Error && error.stack) {
+      console.error(`   📍 Stack:`, error.stack);
+    }
     throw error;
   }
 }

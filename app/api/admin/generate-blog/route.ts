@@ -85,6 +85,11 @@ Guidelines:
     return result
   } catch (error) {
     console.error('OpenAI blog generation failed:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown',
+      name: error instanceof Error ? error.name : 'Unknown',
+      stack: error instanceof Error ? error.stack : 'No stack'
+    })
     throw error
   }
 }
