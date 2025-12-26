@@ -159,7 +159,6 @@ export async function POST(request: NextRequest) {
         seo_description: result.seo_description,
         tags: result.tags,
         published: true,
-        published_at: new Date().toISOString(),
         metadata: {
           author: body.author,
           category: body.category,
