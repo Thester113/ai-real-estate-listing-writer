@@ -51,23 +51,40 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'
+  const postUrl = `${baseUrl}/blog/${params.slug}`
+
   return {
     title: post.metadata?.seo_title || post.title,
     description: post.metadata?.seo_description || post.excerpt,
     keywords: post.metadata?.tags || [],
+    alternates: {
+      canonical: `/blog/${params.slug}`,
+    },
     openGraph: {
       title: post.metadata?.seo_title || post.title,
       description: post.metadata?.seo_description || post.excerpt,
       type: 'article',
       publishedTime: post.created_at,
+      modifiedTime: post.updated_at,
       authors: [post.metadata?.author || 'AI PropertyWriter'],
       tags: post.metadata?.tags || [],
+      url: postUrl,
+      images: [
+        {
+          url: `${baseUrl}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.metadata?.seo_title || post.title,
       description: post.metadata?.seo_description || post.excerpt,
-    }
+      images: [`${baseUrl}/og-image.png`],
+    },
   }
 }
 
@@ -89,19 +106,37 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     notFound()
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'
+
   // Prepare structured data for Article schema
   const articleSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
+    image: `${baseUrl}/og-image.png`,
     datePublished: post.created_at,
     dateModified: post.updated_at,
     author: {
       '@type': 'Person',
-      name: post.metadata?.author || 'AI PropertyWriter'
+      name: post.metadata?.author || 'AI PropertyWriter',
+      url: baseUrl,
     },
-    keywords: post.metadata?.tags?.join(', ') || ''
+    publisher: {
+      '@type': 'Organization',
+      name: 'AI Property Writer',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${baseUrl}/blog/${post.slug}`,
+    },
+    keywords: post.metadata?.tags?.join(', ') || '',
+    articleSection: post.metadata?.category || 'Real Estate',
+    wordCount: post.content?.split(/\s+/).length || 0,
   }
 
   return (
