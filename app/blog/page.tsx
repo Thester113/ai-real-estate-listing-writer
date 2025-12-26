@@ -19,21 +19,21 @@ interface BlogPost {
   title: string
   slug: string
   excerpt: string
-  published_at: string
-  tags: string[]
+  created_at: string
   metadata: {
     author: string
     category: string
     readTime: string
+    tags?: string[]
   }
 }
 
 async function getBlogPosts(): Promise<BlogPost[]> {
   const { data, error } = await (supabaseAdmin as any)
     .from('blog_posts')
-    .select('id, title, slug, excerpt, published_at, tags, metadata')
+    .select('id, title, slug, excerpt, created_at, metadata')
     .eq('published', true)
-    .order('published_at', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Failed to fetch blog posts:', error)
@@ -135,7 +135,7 @@ export default async function BlogPage() {
                         </div>
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-1" />
-                          {formatDate(blogPosts[0].published_at)}
+                          {formatDate(blogPosts[0].created_at)}
                         </div>
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
@@ -202,7 +202,7 @@ export default async function BlogPage() {
                     </Button>
                   </div>
                   <div className="mt-3 text-xs text-muted-foreground">
-                    {formatDate(post.published_at)}
+                    {formatDate(post.created_at)}
                   </div>
                 </div>
               </article>
