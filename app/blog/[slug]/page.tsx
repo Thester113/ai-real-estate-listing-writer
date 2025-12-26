@@ -14,17 +14,16 @@ interface BlogPost {
   slug: string
   content: string
   excerpt: string
-  seo_title: string
-  seo_description: string
-  tags: string[]
   published: boolean
-  published_at: string
   created_at: string
   updated_at: string
   metadata: {
     author: string
     category: string
     readTime: string
+    tags?: string[]
+    seo_title?: string
+    seo_description?: string
   }
 }
 
@@ -53,21 +52,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   return {
-    title: post.seo_title || post.title,
-    description: post.seo_description || post.excerpt,
-    keywords: post.tags,
+    title: post.metadata?.seo_title || post.title,
+    description: post.metadata?.seo_description || post.excerpt,
+    keywords: post.metadata?.tags || [],
     openGraph: {
-      title: post.seo_title || post.title,
-      description: post.seo_description || post.excerpt,
+      title: post.metadata?.seo_title || post.title,
+      description: post.metadata?.seo_description || post.excerpt,
       type: 'article',
-      publishedTime: post.published_at,
+      publishedTime: post.created_at,
       authors: [post.metadata?.author || 'AI PropertyWriter'],
-      tags: post.tags,
+      tags: post.metadata?.tags || [],
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.seo_title || post.title,
-      description: post.seo_description || post.excerpt,
+      title: post.metadata?.seo_title || post.title,
+      description: post.metadata?.seo_description || post.excerpt,
     }
   }
 }
@@ -96,13 +95,13 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
-    datePublished: post.published_at,
+    datePublished: post.created_at,
     dateModified: post.updated_at,
     author: {
       '@type': 'Person',
       name: post.metadata?.author || 'AI PropertyWriter'
     },
-    keywords: post.tags.join(', ')
+    keywords: post.metadata?.tags?.join(', ') || ''
   }
 
   return (
@@ -156,7 +155,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               </div>
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
-                {formatDate(post.published_at)}
+                {formatDate(post.created_at)}
               </div>
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-2" />
@@ -185,11 +184,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           />
 
           {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
+          {post.metadata?.tags && post.metadata.tags.length > 0 && (
             <div className="mt-12 pt-8 border-t">
               <div className="flex items-center flex-wrap gap-2">
                 <Tag className="h-4 w-4 text-muted-foreground" />
-                {post.tags.map((tag) => (
+                {post.metadata.tags.map((tag) => (
                   <span
                     key={tag}
                     className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm"
