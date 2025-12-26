@@ -3,6 +3,9 @@
     "app/api/generate/listing/route.ts": {
       "maxDuration": 30
     },
+    "app/api/admin/generate-blog/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/blog/generate/route.ts": {
       "maxDuration": 30
     },
