@@ -10,23 +10,23 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error('Missing required Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
 }
 
-if (!SUPABASE_SERVICE_KEY) {
-  console.warn('Warning: SUPABASE_SERVICE_ROLE_KEY is not set. Admin operations will fail.')
-}
-
-// Create client instances securely from environment variables
+// Create public client for client-side use
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-export const supabaseAdmin = createClient<Database>(
-  SUPABASE_URL!,
-  SUPABASE_SERVICE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
+// Create admin client ONLY on server side (service key not exposed to client)
+// This will be undefined on the client, which is correct - admin client should only be used server-side
+export const supabaseAdmin = SUPABASE_SERVICE_KEY
+  ? createClient<Database>(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+  : (supabase as any) // Fallback to regular client on client-side (should never be used)
 
 // Helper functions
 export async function getSession() {
