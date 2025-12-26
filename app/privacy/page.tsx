@@ -1,5 +1,15 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy - AI PropertyWriter',
+  description: 'Learn how AI PropertyWriter protects your data and respects your privacy. Read our comprehensive privacy policy.',
+  robots: {
+    index: true,
+    follow: true,
+  }
+}
 
 export default function PrivacyPage() {
   return (

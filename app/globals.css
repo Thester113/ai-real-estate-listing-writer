@@ -58,6 +58,41 @@
   }
 }
 
+/* Blog prose styling for rich HTML content */
+@layer components {
+  .prose {
+    @apply text-foreground;
+  }
+
+  .prose h2 {
+    @apply scroll-mt-20;
+  }
+
+  .prose h3 {
+    @apply scroll-mt-20;
+  }
+
+  .prose a {
+    @apply font-medium underline underline-offset-4;
+  }
+
+  .prose strong {
+    @apply font-semibold;
+  }
+
+  .prose code {
+    @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-sm;
+  }
+
+  .prose pre {
+    @apply overflow-x-auto rounded-lg bg-muted p-4;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary pl-4 italic;
+  }
+}
+
 @layer components {
   .animate-gradient {
     background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981);

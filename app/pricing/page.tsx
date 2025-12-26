@@ -219,8 +219,67 @@ export default function PricingPage() {
     return { text: plan.cta, disabled: false, variant: 'default' as const }
   }
 
+  // JSON-LD structured data for SEO
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'AI PropertyWriter',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://aipropertywriter.com',
+    description: 'AI-powered real estate listing writer that helps agents create compelling property descriptions',
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/logo.png`
+  }
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Can I change my plan anytime?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and billing is prorated.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What happens if I exceed my limits?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'You'll be notified when you're approaching your limits. Once reached, you'll need to upgrade or wait until your next billing cycle.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is there a free trial?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'The Starter plan is completely free forever with 20 listings per month. No credit card required to get started.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I cancel anytime?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Absolutely. You can cancel your subscription anytime from the billing portal. You'll continue to have access until your current period ends.'
+        }
+      }
+    ]
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
       {/* Header */}
       <header className="bg-background/80 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -407,5 +466,6 @@ export default function PricingPage() {
         </div>
       </section>
     </div>
+    </>
   )
 }
