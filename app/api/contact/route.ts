@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { secureJsonResponse } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 import { getErrorMessage } from '@/lib/utils'
 
@@ -13,17 +12,17 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!name || !email || !subject || !message) {
-      return secureJsonResponse({ 
-        error: 'All fields are required: name, email, subject, message' 
-      }, 400)
+      return NextResponse.json({
+        error: 'All fields are required: name, email, subject, message'
+      }, { status: 400 })
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      return secureJsonResponse({ 
-        error: 'Please provide a valid email address' 
-      }, 400)
+      return NextResponse.json({
+        error: 'Please provide a valid email address'
+      }, { status: 400 })
     }
 
     // Rate limiting check could be added here
@@ -70,18 +69,18 @@ export async function POST(request: NextRequest) {
     // 2. Store the message in a database
     // 3. Send auto-reply to the user
 
-    return secureJsonResponse({
+    return NextResponse.json({
       success: true,
       message: 'Thank you for your message! We\'ll get back to you soon.'
     })
 
   } catch (error) {
     console.error('Contact form error:', error)
-    
-    return secureJsonResponse({
+
+    return NextResponse.json({
       success: false,
       error: getErrorMessage(error),
       message: 'Failed to send message. Please try again.'
-    }, 500)
+    }, { status: 500 })
   }
 }
