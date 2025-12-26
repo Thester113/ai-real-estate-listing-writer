@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { supabase, getProfile, getUserUsage } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
@@ -49,6 +55,7 @@ export default function Dashboard() {
   const [usage, setUsage] = useState<Usage | null>(null)
   const [generations, setGenerations] = useState<Generation[]>([])
   const [loading, setLoading] = useState(true)
+  const [isBillingLoading, setIsBillingLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -99,6 +106,50 @@ export default function Dashboard() {
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  const handleManageBilling = async () => {
+    setIsBillingLoading(true)
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError || !session) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Please sign in again to manage your billing.',
+          variant: 'destructive'
+        })
+        router.push('/auth?redirect=/dashboard')
+        return
+      }
+
+      const response = await fetch('/api/stripe/create-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          returnUrl: `${window.location.origin}/dashboard`
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to access billing portal')
+      }
+
+      window.location.href = data.url
+    } catch (error) {
+      console.error('Billing portal error:', error)
+      toast({
+        title: 'Error',
+        description: getErrorMessage(error),
+        variant: 'destructive'
+      })
+    } finally {
+      setIsBillingLoading(false)
+    }
   }
 
   const getLimitForPlan = (plan: 'starter' | 'pro') => {
@@ -156,6 +207,34 @@ export default function Dashboard() {
               <span className="text-sm text-muted-foreground">
                 Welcome back, {profile.full_name}!
               </span>
+
+              {/* Settings Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-5 w-5" />
+                    <span className="sr-only">Settings</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {profile.customer_id && (
+                    <DropdownMenuItem
+                      onClick={handleManageBilling}
+                      disabled={isBillingLoading}
+                    >
+                      {isBillingLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                          Loading...
+                        </>
+                      ) : (
+                        'Manage Billing'
+                      )}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button variant="outline" onClick={handleSignOut}>
                 Sign Out
               </Button>
