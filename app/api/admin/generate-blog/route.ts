@@ -68,6 +68,7 @@ Guidelines:
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       max_tokens: 3000,
+    }, {
       timeout: 60000, // 60 second timeout
     })
     console.log('✅ OpenAI API responded successfully')
