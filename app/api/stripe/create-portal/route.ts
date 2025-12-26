@@ -19,16 +19,27 @@ export async function POST(request: NextRequest) {
 
     // Get user session
     const authHeader = request.headers.get('authorization')
+    console.log('🔑 Auth header exists:', !!authHeader)
+
     if (!authHeader?.startsWith('Bearer ')) {
+      console.log('❌ No valid authorization header')
       return secureJsonResponse({ error: 'Authentication required' }, 401)
     }
 
     const token = authHeader.substring(7)
+    console.log('🔍 Getting user from token...')
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
+
     if (authError || !user) {
-      return secureJsonResponse({ error: 'Invalid authentication' }, 401)
+      console.error('❌ Auth error:', authError)
+      console.log('User found:', !!user)
+      return secureJsonResponse({
+        error: 'Invalid authentication',
+        details: authError?.message
+      }, 401)
     }
+
+    console.log('✅ User authenticated:', user.id)
 
     // Parse request body
     const body = await request.json()

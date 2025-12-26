@@ -160,11 +160,25 @@ export default function PricingPage() {
 
   const handleManageBilling = async () => {
     try {
+      // Get current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError || !session) {
+        console.error('Session error:', sessionError)
+        toast({
+          title: 'Authentication Error',
+          description: 'Please sign in again to manage your billing.',
+          variant: 'destructive'
+        })
+        router.push('/auth?redirect=/pricing')
+        return
+      }
+
       const response = await fetch('/api/stripe/create-portal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           returnUrl: `${window.location.origin}/dashboard`
@@ -174,6 +188,7 @@ export default function PricingPage() {
       const data = await response.json()
 
       if (!response.ok) {
+        console.error('Portal response error:', data)
         throw new Error(data.error || 'Failed to access billing portal')
       }
 
