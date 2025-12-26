@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'
+  // Always use production domain to avoid env var issues in Vercel
+  const baseUrl = 'https://www.aipropertywriter.com'
 
   return {
     rules: {
