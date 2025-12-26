@@ -18,15 +18,17 @@ export default function HomePage() {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        name: 'Free Trial',
-        description: 'Try AI Property Writer free with no credit card required'
+        name: 'Starter Plan',
+        description: 'Free plan with 20 listings per month',
+        priceValidUntil: '2025-12-31',
       },
       {
         '@type': 'Offer',
         price: '29',
         priceCurrency: 'USD',
-        name: 'Premium Plan',
-        description: 'Unlimited real estate listing generation'
+        name: 'Pro Plan',
+        description: 'Unlimited real estate listing generation',
+        priceValidUntil: '2025-12-31',
       }
     ],
     aggregateRating: {
