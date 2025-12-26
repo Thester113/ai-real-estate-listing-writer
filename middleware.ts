@@ -70,10 +70,11 @@ export function middleware(request: NextRequest) {
   
   // Check for maintenance mode (highest priority)
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === '1'
-  
-  // Allow access to maintenance page, API health check, and static assets
-  if (pathname === '/maintenance' || 
+
+  // Allow access to maintenance page, admin APIs, API health check, and static assets
+  if (pathname === '/maintenance' ||
       pathname === '/api/health' ||
+      pathname.startsWith('/api/admin/') ||
       pathname.startsWith('/_next/') ||
       pathname.startsWith('/favicon')) {
     // Continue with normal processing
