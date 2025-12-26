@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+import nodemailer from 'nodemailer'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,11 +22,19 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Send email notification to support team
-    if (resend) {
+    // Send email notification to support team via Gmail SMTP
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
       try {
-        await resend.emails.send({
-          from: 'AI PropertyWriter <noreply@aipropertywriter.com>',
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_APP_PASSWORD,
+          },
+        })
+
+        await transporter.sendMail({
+          from: `"AI PropertyWriter" <${process.env.GMAIL_USER}>`,
           to: 'support@aipropertywriter.com',
           replyTo: email,
           subject: `Contact Form: ${subject}`,
@@ -40,15 +46,15 @@ export async function POST(request: NextRequest) {
             <p>${message.replace(/\n/g, '<br>')}</p>
             <hr>
             <p><small>Submitted: ${new Date().toLocaleString()}</small></p>
-          `
+          `,
         })
-        console.log('Email notification sent to support@aipropertywriter.com')
+        console.log('Email notification sent to support@aipropertywriter.com via Gmail')
       } catch (emailError) {
-        console.error('Resend email error:', emailError)
+        console.error('Gmail SMTP error:', emailError)
         // Don't fail the request if email fails, but log it
       }
     } else {
-      console.warn('RESEND_API_KEY not configured - email notification skipped')
+      console.warn('Gmail credentials not configured - email notification skipped')
     }
 
     // Send to ConvertKit as a lead with contact form tag
