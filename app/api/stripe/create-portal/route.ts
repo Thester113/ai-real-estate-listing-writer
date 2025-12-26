@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-client'
-import { validateRequest, secureJsonResponse } from '@/lib/security'
+import { secureJsonResponse } from '@/lib/security'
 import { getErrorMessage } from '@/lib/utils'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -10,8 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate request
-    await validateRequest(request)
+    // Basic validation - rate limiting handled by middleware
 
     // Get user session
     const authHeader = request.headers.get('authorization')

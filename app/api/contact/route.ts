@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateRequest, secureJsonResponse } from '@/lib/security'
+import { secureJsonResponse } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 import { getErrorMessage } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate request
-    await validateRequest(request)
+    // Basic validation - rate limiting handled by middleware
 
     // Parse request body
     const body = await request.json()

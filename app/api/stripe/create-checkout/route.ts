@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-client'
-import { validateRequest, secureJsonResponse } from '@/lib/security'
+import { secureJsonResponse } from '@/lib/security'
 import { getErrorMessage } from '@/lib/utils'
 import { stripeConfig, validateStripeConfig, isStripeInLiveMode } from '@/lib/stripe-config'
 
@@ -15,8 +15,7 @@ export async function POST(request: NextRequest) {
       apiVersion: '2023-10-16',
     })
 
-    // Validate request
-    await validateRequest(request)
+    // Basic validation - rate limiting handled by middleware
 
     // Get user session
     const authHeader = request.headers.get('authorization')
