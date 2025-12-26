@@ -1,0 +1,16 @@
+/* TEAM */
+Developer: AI Property Writer Team
+Site: https://www.aipropertywriter.com
+Contact: support@aipropertywriter.com
+Location: United States
+
+/* THANKS */
+Next.js: https://nextjs.org
+Vercel: https://vercel.com
+React: https://react.dev
+
+/* SITE */
+Last update: 2025-12-26
+Language: English
+Doctype: HTML5
+IDE: Visual Studio Code, Claude Code
