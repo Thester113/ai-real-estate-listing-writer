@@ -78,11 +78,19 @@ Guidelines:
       throw new Error('No content generated')
     }
 
+    // Strip markdown code blocks if present
+    let jsonContent = content.trim()
+    if (jsonContent.startsWith('```json')) {
+      jsonContent = jsonContent.replace(/^```json\s*\n?/, '').replace(/\n?```\s*$/, '')
+    } else if (jsonContent.startsWith('```')) {
+      jsonContent = jsonContent.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '')
+    }
+
     // Parse the JSON response
-    const result = JSON.parse(content) as BlogResult
+    const result = JSON.parse(jsonContent) as BlogResult
 
     // Validate required fields
-    if (!result.title || !result.content || !result.excerpt || !result.seo_title || !result.seo_description || !result.tags) {
+    if (!result.title || !result.content || !result.excerpt || !result.tags) {
       throw new Error('Missing required fields in generated content')
     }
 
@@ -155,15 +163,15 @@ export async function POST(request: NextRequest) {
         slug: uniqueSlug,
         content: result.content,
         excerpt: result.excerpt,
-        seo_title: result.seo_title,
-        seo_description: result.seo_description,
         tags: result.tags,
         published: true,
         metadata: {
           author: body.author,
           category: body.category,
           readTime: readTime,
-          keywords: body.keywords
+          keywords: body.keywords,
+          seo_title: result.seo_title,
+          seo_description: result.seo_description
         }
       })
       .select('*')
