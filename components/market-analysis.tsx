@@ -39,11 +39,13 @@ const fetchMarketAnalysis = async (
 
   const response = await fetch(`/api/market-analysis?${params}`)
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch market analysis')
-  }
-
   const result = await response.json()
+
+  if (!response.ok) {
+    // Extract error message from API response
+    const errorMessage = result.message || result.error || 'Failed to fetch market analysis'
+    throw new Error(errorMessage)
+  }
 
   if (!result.success) {
     throw new Error(result.error || 'Unknown error')
@@ -71,7 +73,12 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
       setMarketData(data)
       onAnalysisComplete?.(data)
     } catch (err) {
-      setError('Failed to fetch market analysis')
+      // Extract error message from API response
+      let errorMessage = 'Failed to fetch market analysis'
+      if (err instanceof Error) {
+        errorMessage = err.message
+      }
+      setError(errorMessage)
       console.error('Market analysis error:', err)
     } finally {
       setLoading(false)
