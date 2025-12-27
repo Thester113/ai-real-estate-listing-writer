@@ -191,9 +191,11 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
               <DollarSign className="h-3 w-3 text-muted-foreground mr-1" />
               <span className="text-xs text-muted-foreground">Median Price</span>
             </div>
-            <div className="font-semibold">${marketData.medianPrice.toLocaleString()}</div>
+            <div className="font-semibold">
+              {marketData.medianPrice === -1 ? 'N/A' : `$${marketData.medianPrice.toLocaleString()}`}
+            </div>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <TrendingUp className="h-3 w-3 text-muted-foreground mr-1" />
@@ -203,21 +205,25 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
               {marketData.priceChange >= 0 ? '+' : ''}{marketData.priceChange.toFixed(1)}%
             </div>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <MapPin className="h-3 w-3 text-muted-foreground mr-1" />
               <span className="text-xs text-muted-foreground">Days on Market</span>
             </div>
-            <div className="font-semibold">{marketData.daysOnMarket}</div>
+            <div className="font-semibold">
+              {marketData.daysOnMarket === -1 ? 'N/A' : marketData.daysOnMarket}
+            </div>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <Users className="h-3 w-3 text-muted-foreground mr-1" />
               <span className="text-xs text-muted-foreground">Demand Score</span>
             </div>
-            <div className="font-semibold">{marketData.demandScore}/100</div>
+            <div className="font-semibold">
+              {marketData.demandScore === -1 ? 'N/A' : `${marketData.demandScore}/100`}
+            </div>
           </div>
         </div>
 

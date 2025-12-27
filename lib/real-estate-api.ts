@@ -280,26 +280,30 @@ export function generateFallbackMarketData(
 ): MarketData {
   console.warn('Using fallback market data - API unavailable')
 
+  // Use reasonable placeholder values instead of zeros
   return {
     location,
-    medianPrice: 0,
+    medianPrice: -1, // -1 signals "not available" to UI
     priceChange: 0,
-    daysOnMarket: 0,
-    inventory: 0,
-    demandScore: 0,
+    daysOnMarket: -1,
+    inventory: -1,
+    demandScore: -1,
     recommendations: [
-      'Market data temporarily unavailable',
+      'Add RentCast API key to .env.local to enable real market data',
       'Contact local real estate agent for current market conditions',
-      `Price ${propertyType.toLowerCase()} competitively based on comparable sales`,
+      `Research comparable ${propertyType.toLowerCase()} sales in ${location}`,
+      'Consider professional market analysis for accurate pricing'
     ],
     keyInsights: [
-      'Real-time market data is temporarily unavailable',
-      'Cached or fallback data shown - use with caution',
+      'Market data requires RentCast API key configuration',
+      'Sign up for free API key at app.rentcast.io (50 requests/month)',
+      'Real-time data will show median prices, days on market, and trends'
     ],
     competitiveFactors: [
-      'Current market data unavailable',
+      'Enable API integration to view competitive landscape',
+      'Real data shows active listings, recent sales, and market velocity'
     ],
     dataFreshness: new Date(0), // Unix epoch to indicate no fresh data
-    dataSource: 'Fallback',
+    dataSource: 'Configuration Required',
   }
 }
