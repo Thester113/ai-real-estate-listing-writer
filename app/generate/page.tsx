@@ -400,7 +400,10 @@ export default function GeneratePage() {
                     <input
                       type="number"
                       value={formData.bedrooms}
-                      onChange={(e) => setFormData(prev => ({ ...prev, bedrooms: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : parseInt(e.target.value)
+                        setFormData(prev => ({ ...prev, bedrooms: value }))
+                      }}
                       min="0"
                       max="20"
                       className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
@@ -413,7 +416,10 @@ export default function GeneratePage() {
                     <input
                       type="number"
                       value={formData.bathrooms}
-                      onChange={(e) => setFormData(prev => ({ ...prev, bathrooms: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value)
+                        setFormData(prev => ({ ...prev, bathrooms: value }))
+                      }}
                       min="0"
                       max="20"
                       step="0.5"
