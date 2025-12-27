@@ -303,16 +303,10 @@ export async function POST(request: NextRequest) {
       features: body.features?.length
     })
 
-    // Generate production-ready listing
-    const result = await generatePropertyListing(body)
-    const wordCount = countWords(result)
-
-    console.log('✅ Listing generation successful')
-
-    // Extract user ID from token for database saving
+    // Extract user ID from token FIRST for validation
     const token = authHeader.substring(7)
     let userId = null
-    
+
     try {
       console.log('🔍 Getting user ID from token...')
       const { data: userData, error: authError } = await supabaseAdmin.auth.getUser(token)
@@ -321,7 +315,7 @@ export async function POST(request: NextRequest) {
         console.log('👤 User ID found:', userId)
       }
     } catch (error) {
-      console.log('⚠️ Could not get user ID, skipping database save:', error)
+      console.log('⚠️ Could not get user ID, skipping validation:', error)
     }
 
     // Get user's profile to check plan and usage
@@ -438,6 +432,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Pro features validation passed')
+
+    // NOW generate the listing after all validation has passed
+    const result = await generatePropertyListing(body)
+    const wordCount = countWords(result)
+
+    console.log('✅ Listing generation successful')
 
     // Save to database if we have user ID
     if (userId) {
