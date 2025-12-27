@@ -268,6 +268,31 @@ export default function Dashboard() {
                 <span>{getRemainingGenerations()} remaining</span>
                 <span>{getLimitForPlan(profile.plan)} total</span>
               </div>
+
+              {/* Usage warnings */}
+              {getUsagePercentage() >= 80 && getRemainingGenerations() > 0 && (
+                <div className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+                  ⚠️ You're approaching your monthly limit.
+                  {profile.plan === 'starter' && (
+                    <Link href="/pricing" className="font-medium underline ml-1">
+                      Upgrade to Pro for 500 generations/month
+                    </Link>
+                  )}
+                </div>
+              )}
+
+              {getRemainingGenerations() === 0 && (
+                <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  🚫 Monthly limit reached.
+                  {profile.plan === 'starter' ? (
+                    <Link href="/pricing" className="font-medium underline ml-1">
+                      Upgrade to Pro for more generations
+                    </Link>
+                  ) : (
+                    <span className="ml-1">Resets next month.</span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

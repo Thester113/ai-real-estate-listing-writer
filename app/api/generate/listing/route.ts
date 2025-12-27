@@ -324,6 +324,121 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Could not get user ID, skipping database save:', error)
     }
 
+    // Get user's profile to check plan and usage
+    let userPlan: 'starter' | 'pro' = 'starter'
+    let currentUsage = 0
+    let monthlyLimit = 20
+
+    if (userId) {
+      try {
+        // Get user's profile for plan type
+        const { data: profile, error: profileError } = await (supabaseAdmin as any)
+          .from('profiles')
+          .select('plan')
+          .eq('id', userId)
+          .single()
+
+        if (profileError) {
+          console.error('❌ Failed to get user profile:', profileError)
+        } else if (profile) {
+          userPlan = profile.plan || 'starter'
+          console.log('📊 User plan:', userPlan)
+        }
+
+        // Get current month's usage
+        const { getUserUsage } = await import('@/lib/supabase-client')
+        const usage = await getUserUsage(userId)
+        currentUsage = usage?.listings_generated || 0
+        console.log('📊 Current usage:', currentUsage)
+      } catch (error) {
+        console.error('⚠️ Failed to get profile/usage:', error)
+      }
+    }
+
+    // Check usage limits
+    monthlyLimit = userPlan === 'pro' ? 500 : 20
+
+    if (currentUsage >= monthlyLimit) {
+      console.log('⛔ User has exceeded their monthly limit')
+      return NextResponse.json({
+        success: false,
+        error: 'Monthly generation limit reached',
+        message: `You've used all ${monthlyLimit} generations for this month. ${
+          userPlan === 'starter'
+            ? 'Upgrade to Pro for 500 generations per month!'
+            : 'Your limit will reset next month.'
+        }`,
+        limitReached: true,
+        currentUsage,
+        monthlyLimit
+      }, { status: 403 })
+    }
+
+    console.log(`✅ Usage check passed: ${currentUsage}/${monthlyLimit}`)
+
+    // Validate Pro-only features
+    const proFeatures = {
+      listingStyle: body.listingStyle,
+      tone: body.tone,
+      wordCount: body.wordCount,
+      includeKeywords: body.includeKeywords,
+      customKeywords: body.customKeywords
+    }
+
+    // Check if user is trying to use Pro features without Pro plan
+    if (userPlan !== 'pro') {
+      const restrictedStyles = ['luxury', 'investment', 'family', 'modern', 'traditional']
+      const restrictedTones = ['conversational', 'upscale', 'warm', 'energetic', 'authoritative']
+      const restrictedWordCounts = ['detailed', 'extensive']
+
+      if (proFeatures.listingStyle && restrictedStyles.includes(proFeatures.listingStyle)) {
+        return NextResponse.json({
+          success: false,
+          error: 'Pro feature required',
+          message: `The "${proFeatures.listingStyle}" listing style is a Pro-only feature. Upgrade to Pro to unlock all listing styles.`,
+          featureRequired: 'pro'
+        }, { status: 403 })
+      }
+
+      if (proFeatures.tone && restrictedTones.includes(proFeatures.tone)) {
+        return NextResponse.json({
+          success: false,
+          error: 'Pro feature required',
+          message: `The "${proFeatures.tone}" tone is a Pro-only feature. Upgrade to Pro to unlock all tone options.`,
+          featureRequired: 'pro'
+        }, { status: 403 })
+      }
+
+      if (proFeatures.wordCount && restrictedWordCounts.includes(proFeatures.wordCount)) {
+        return NextResponse.json({
+          success: false,
+          error: 'Pro feature required',
+          message: 'Extended word counts are a Pro-only feature. Upgrade to Pro for detailed and extensive listings.',
+          featureRequired: 'pro'
+        }, { status: 403 })
+      }
+
+      if (proFeatures.includeKeywords && proFeatures.customKeywords) {
+        return NextResponse.json({
+          success: false,
+          error: 'Pro feature required',
+          message: 'SEO keyword optimization is a Pro-only feature. Upgrade to Pro to include custom keywords.',
+          featureRequired: 'pro'
+        }, { status: 403 })
+      }
+
+      // If any Pro features were sent but user is on Starter, strip them out
+      body.listingStyle = 'standard'
+      body.tone = 'professional'
+      body.wordCount = 'standard'
+      body.includeKeywords = false
+      body.customKeywords = ''
+
+      console.log('⚠️ Stripped Pro features from Starter user request')
+    }
+
+    console.log('✅ Pro features validation passed')
+
     // Save to database if we have user ID
     if (userId) {
       try {
@@ -343,7 +458,13 @@ export async function POST(request: NextRequest) {
             metadata: {
               model: 'gpt-4o',
               tokens_used: Math.ceil(wordCount * 1.3),
-              plan: 'starter'
+              plan: userPlan,
+              features_used: {
+                listingStyle: body.listingStyle || 'standard',
+                tone: body.tone || 'professional',
+                wordCount: body.wordCount || 'standard',
+                keywords: body.includeKeywords || false
+              }
             }
           })
           .select('*')
@@ -376,13 +497,18 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ No user ID available, cannot save to database')
     }
 
+    const remainingGenerations = monthlyLimit - (currentUsage + 1) // +1 for current generation
+
     return NextResponse.json({
       success: true,
       data: result,
       meta: {
         wordCount: wordCount,
         tokensUsed: Math.ceil(wordCount * 1.3),
-        remainingGenerations: 19
+        remainingGenerations: remainingGenerations,
+        monthlyLimit: monthlyLimit,
+        currentUsage: currentUsage + 1,
+        plan: userPlan
       }
     })
 

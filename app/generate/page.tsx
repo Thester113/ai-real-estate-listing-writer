@@ -229,11 +229,30 @@ export default function GeneratePage() {
 
     } catch (error) {
       console.error('Generation error:', error)
-      toast({
-        title: 'Generation failed',
-        description: getErrorMessage(error),
-        variant: 'destructive'
-      })
+
+      // Check if it's a limit reached error
+      const errorMessage = getErrorMessage(error)
+      if (errorMessage.includes('limit') || errorMessage.includes('Monthly generation limit reached')) {
+        toast({
+          title: 'Monthly limit reached',
+          description: userPlan === 'starter'
+            ? 'Upgrade to Pro for 500 generations per month!'
+            : 'Your limit will reset next month.',
+          variant: 'destructive'
+        })
+      } else if (errorMessage.includes('Pro feature') || errorMessage.includes('Pro-only')) {
+        toast({
+          title: 'Pro feature required',
+          description: 'This feature is only available on the Pro plan.',
+          variant: 'destructive'
+        })
+      } else {
+        toast({
+          title: 'Generation failed',
+          description: errorMessage,
+          variant: 'destructive'
+        })
+      }
     } finally {
       setGenerating(false)
     }
