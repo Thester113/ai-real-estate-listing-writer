@@ -59,9 +59,20 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Helper to check if location includes a ZIP code
+  const hasZipCode = (loc: string): boolean => {
+    return /\b\d{5}\b/.test(loc)
+  }
+
   const runAnalysis = async (forceRefresh: boolean = false) => {
     if (!location || !propertyType) {
       setError('Location and property type are required')
+      return
+    }
+
+    // Check for ZIP code before making API call
+    if (!hasZipCode(location)) {
+      setError('Please include a ZIP code in the location field for market analysis (e.g., "Seattle, WA 98101")')
       return
     }
 

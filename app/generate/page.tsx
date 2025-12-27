@@ -445,10 +445,13 @@ export default function GeneratePage() {
                     type="text"
                     value={formData.location}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="e.g. Downtown Seattle, WA"
+                    placeholder="e.g. Seattle, WA 98101"
                     className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                   />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Include ZIP code for accurate market analysis
+                  </p>
                 </div>
 
                 {/* Target Audience */}
