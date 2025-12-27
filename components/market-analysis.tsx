@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, MapPin, DollarSign, Users, AlertCircle, BarChart3 } from 'lucide-react'
+import { TrendingUp, MapPin, DollarSign, Users, AlertCircle, BarChart3, RefreshCw } from 'lucide-react'
 
 interface MarketData {
   location: string
@@ -14,6 +14,8 @@ interface MarketData {
   recommendations: string[]
   keyInsights: string[]
   competitiveFactors: string[]
+  dataFreshness?: Date | string
+  dataSource?: string
 }
 
 interface MarketAnalysisProps {
@@ -23,85 +25,31 @@ interface MarketAnalysisProps {
   onAnalysisComplete?: (data: MarketData) => void
 }
 
-// Mock market analysis function - in production, this would connect to real estate APIs
-const generateMarketAnalysis = async (location: string, propertyType: string, priceRange?: { min: number; max: number } | null): Promise<MarketData> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  // Generate realistic mock data based on inputs
-  const basePrice = priceRange ? (priceRange.min + priceRange.max) / 2 : getEstimatedPrice(location, propertyType)
-  
-  return {
+// Fetch market analysis from API
+const fetchMarketAnalysis = async (
+  location: string,
+  propertyType: string,
+  forceRefresh: boolean = false
+): Promise<MarketData> => {
+  const params = new URLSearchParams({
     location,
-    medianPrice: Math.round(basePrice * (0.9 + Math.random() * 0.2)),
-    priceChange: (Math.random() - 0.5) * 20, // -10% to +10%
-    daysOnMarket: Math.floor(20 + Math.random() * 40), // 20-60 days
-    inventory: Math.floor(50 + Math.random() * 100), // 50-150 properties
-    demandScore: Math.floor(65 + Math.random() * 30), // 65-95 score
-    recommendations: [
-      "Highlight energy efficiency features - buyers in this market prioritize sustainable homes",
-      "Emphasize proximity to transit - commuter convenience is highly valued",
-      "Feature outdoor spaces prominently - outdoor living is a key selling point",
-      "Price competitively within the $" + Math.round(basePrice * 0.95).toLocaleString() + " - $" + Math.round(basePrice * 1.05).toLocaleString() + " range"
-    ],
-    keyInsights: [
-      "Market is currently " + (Math.random() > 0.5 ? "favoring sellers" : "more balanced"),
-      "Inventory levels are " + (Math.random() > 0.5 ? "low" : "moderate") + " compared to last year",
-      "Properties with modern amenities sell 15% faster",
-      "This neighborhood attracts primarily " + getTargetDemographic(location)
-    ],
-    competitiveFactors: [
-      "3 similar properties currently listed within 0.5 miles",
-      "Recent sales show strong demand for " + propertyType.toLowerCase() + "s",
-      "Average days on market trending " + (Math.random() > 0.5 ? "down" : "up"),
-      "Seasonal demand is " + getSeasonalTrend()
-    ]
-  }
-}
+    propertyType,
+    ...(forceRefresh && { forceRefresh: 'true' }),
+  })
 
-const getEstimatedPrice = (location: string, propertyType: string): number => {
-  const locationMultipliers: { [key: string]: number } = {
-    'seattle': 1.4,
-    'san francisco': 2.0,
-    'new york': 1.8,
-    'austin': 1.2,
-    'denver': 1.1,
-    'portland': 1.2,
-    'miami': 1.3,
-    'chicago': 1.0,
-    'atlanta': 0.9,
-    'phoenix': 0.8
-  }
-  
-  const typeMultipliers: { [key: string]: number } = {
-    'single family home': 1.0,
-    'condo/apartment': 0.7,
-    'townhouse': 0.9,
-    'multi-family': 1.2,
-    'luxury': 2.5
-  }
-  
-  const basePrice = 350000
-  const locationKey = Object.keys(locationMultipliers).find(key => 
-    location.toLowerCase().includes(key)
-  )
-  const locationMult = locationKey ? locationMultipliers[locationKey] : 1.0
-  const typeMult = typeMultipliers[propertyType.toLowerCase()] || 1.0
-  
-  return Math.round(basePrice * locationMult * typeMult)
-}
+  const response = await fetch(`/api/market-analysis?${params}`)
 
-const getTargetDemographic = (location: string): string => {
-  const demographics = [
-    "young professionals", "families with children", "first-time buyers", 
-    "investors", "retirees", "luxury buyers"
-  ]
-  return demographics[Math.floor(Math.random() * demographics.length)]
-}
+  if (!response.ok) {
+    throw new Error('Failed to fetch market analysis')
+  }
 
-const getSeasonalTrend = (): string => {
-  const trends = ["strong (peak season)", "moderate", "slower (off-season)", "picking up"]
-  return trends[Math.floor(Math.random() * trends.length)]
+  const result = await response.json()
+
+  if (!result.success) {
+    throw new Error(result.error || 'Unknown error')
+  }
+
+  return result.data
 }
 
 export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisComplete }: MarketAnalysisProps) {
@@ -109,7 +57,7 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const runAnalysis = async () => {
+  const runAnalysis = async (forceRefresh: boolean = false) => {
     if (!location || !propertyType) {
       setError('Location and property type are required')
       return
@@ -119,11 +67,11 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
     setError(null)
 
     try {
-      const data = await generateMarketAnalysis(location, propertyType, priceRange)
+      const data = await fetchMarketAnalysis(location, propertyType, forceRefresh)
       setMarketData(data)
       onAnalysisComplete?.(data)
     } catch (err) {
-      setError('Failed to generate market analysis')
+      setError('Failed to fetch market analysis')
       console.error('Market analysis error:', err)
     } finally {
       setLoading(false)
@@ -154,7 +102,7 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
           <AlertCircle className="h-4 w-4" />
           <span className="text-sm">{error}</span>
         </div>
-        <Button onClick={runAnalysis} variant="outline" size="sm" className="mt-3">
+        <Button onClick={() => runAnalysis()} variant="outline" size="sm" className="mt-3">
           Retry Analysis
         </Button>
       </div>
@@ -169,7 +117,7 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
           <p className="text-sm text-muted-foreground mb-3">
             Get AI-powered market insights for your listing
           </p>
-          <Button onClick={runAnalysis} size="sm">
+          <Button onClick={() => runAnalysis()} size="sm">
             Run Market Analysis
           </Button>
         </div>
@@ -185,10 +133,36 @@ export function MarketAnalysis({ location, propertyType, priceRange, onAnalysisC
             <TrendingUp className="h-4 w-4 text-primary" />
             <h3 className="font-medium">Market Analysis</h3>
           </div>
-          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-            Pro Feature
-          </span>
+          <div className="flex items-center gap-2">
+            {marketData?.dataFreshness && (
+              <span className="text-xs text-muted-foreground">
+                Data as of {new Date(marketData.dataFreshness).toLocaleDateString()}
+              </span>
+            )}
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+              Pro Feature
+            </span>
+          </div>
         </div>
+        {marketData?.dataSource && (
+          <div className="mt-1 text-xs text-muted-foreground">
+            Source: {marketData.dataSource}
+          </div>
+        )}
+        {marketData && (
+          <div className="mt-2">
+            <Button
+              onClick={() => runAnalysis(true)}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className={`h-3 w-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="p-4 space-y-4">
