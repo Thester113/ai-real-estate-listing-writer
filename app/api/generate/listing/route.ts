@@ -46,12 +46,26 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
     targetAudience,
     priceRange,
     additionalDetails,
-    listingStyle = 'standard',
-    tone = 'professional',
-    wordCount = 'standard',
-    includeKeywords = false,
-    customKeywords = ''
+    listingStyle,
+    tone,
+    wordCount,
+    includeKeywords,
+    customKeywords
   } = formData
+
+  // Apply defaults AFTER destructuring so we can see what was sent
+  const finalListingStyle = listingStyle || 'standard'
+  const finalTone = tone || 'professional'
+  const finalWordCount = wordCount || 'standard'
+  const finalIncludeKeywords = includeKeywords || false
+  const finalCustomKeywords = customKeywords || ''
+
+  console.log('🔍 Raw values from frontend:', { listingStyle, tone, wordCount })
+  console.log('✅ Final values after defaults:', {
+    finalListingStyle,
+    finalTone,
+    finalWordCount
+  })
 
   const featuresText = features?.length > 0 ? features.join(', ') : 'No specific features mentioned'
   const priceText = priceRange ? `$${priceRange.min.toLocaleString()} - $${priceRange.max.toLocaleString()}` : 'Price upon request'
@@ -59,21 +73,21 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
 
   // Build style-specific instructions
   let styleInstructions = ''
-  switch (listingStyle) {
+  switch (finalListingStyle) {
     case 'luxury':
-      styleInstructions = 'Focus on sophistication, premium amenities, and exclusive lifestyle. Use elegant language and emphasize prestige.'
+      styleInstructions = 'CRITICAL: This is a luxury listing. Use sophisticated, premium language. Emphasize exclusivity, prestige, high-end amenities, and elite lifestyle. Avoid common words - use elevated vocabulary like "exquisite", "bespoke", "curated", "distinguished".'
       break
     case 'investment':
-      styleInstructions = 'Emphasize ROI potential, rental income, appreciation prospects, and investment benefits. Include market analysis language.'
+      styleInstructions = 'CRITICAL: This is an investment-focused listing. Lead with ROI potential, rental income projections, appreciation prospects, market analysis, and cap rate. Use financial terminology. Emphasize numbers and returns.'
       break
     case 'family':
-      styleInstructions = 'Focus on family life, safety, community, schools, and creating memories. Use warm, emotional language.'
+      styleInstructions = 'CRITICAL: This is a family-oriented listing. Focus heavily on safety, community, schools, parks, family gatherings, creating memories. Use warm, emotional language. Paint pictures of family life here.'
       break
     case 'modern':
-      styleInstructions = 'Highlight contemporary design, smart home features, cutting-edge amenities, and sleek aesthetics.'
+      styleInstructions = 'CRITICAL: This is a modern contemporary listing. Emphasize cutting-edge design, smart home technology, minimalist aesthetics, clean lines, innovative features. Use terms like "sleek", "contemporary", "state-of-the-art".'
       break
     case 'traditional':
-      styleInstructions = 'Emphasize classic charm, timeless features, character, and enduring appeal.'
+      styleInstructions = 'CRITICAL: This is a traditional/classic listing. Highlight timeless architecture, enduring appeal, craftsmanship, character, classic design elements. Use words like "timeless", "elegant", "graceful", "heritage".'
       break
     default:
       styleInstructions = 'Use a balanced, professional approach that appeals to a broad audience.'
@@ -81,7 +95,7 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
 
   // Build tone instructions
   let toneInstructions = ''
-  switch (tone) {
+  switch (finalTone) {
     case 'conversational':
       toneInstructions = 'Write in a friendly, approachable tone as if speaking directly to a friend.'
       break
@@ -104,7 +118,7 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
   // Determine word count range
   let wordCountRange = '150-200 words'
   let maxTokens = 1200
-  switch (wordCount) {
+  switch (finalWordCount) {
     case 'detailed':
       wordCountRange = '250-350 words'
       maxTokens = 1800
@@ -117,9 +131,18 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
 
   // Build keywords instruction
   let keywordsInstruction = ''
-  if (includeKeywords && customKeywords) {
-    keywordsInstruction = `\n\nSEO Keywords to naturally integrate: ${customKeywords}\nWeave these keywords naturally into the content without making it feel forced or spammy.`
+  if (finalIncludeKeywords && finalCustomKeywords) {
+    keywordsInstruction = `\n\nSEO Keywords to naturally integrate: ${finalCustomKeywords}\nWeave these keywords naturally into the content without making it feel forced or spammy.`
   }
+
+  // Log the calculated settings
+  console.log('📐 Generation Settings:', {
+    styleInstructions: styleInstructions.substring(0, 50) + '...',
+    toneInstructions: toneInstructions.substring(0, 50) + '...',
+    wordCountRange,
+    maxTokens,
+    hasKeywords: !!keywordsInstruction
+  })
 
   const prompt = `You are a professional real estate copywriter. Create a compelling property listing for the following property:
 
@@ -142,19 +165,21 @@ Create a listing with the following structure. Return ONLY valid JSON in this ex
 
 {
   "title": "An attention-grabbing title (max 80 characters)",
-  "description": "A compelling description that tells a story and highlights the lifestyle this property offers (${wordCountRange})",
+  "description": "A compelling description that tells a story and highlights the lifestyle this property offers. MANDATORY LENGTH: EXACTLY ${wordCountRange}. Count your words carefully - this is critical.",
   "highlights": ["5-7 key bullet points highlighting the best features", "Each should be concise and benefit-focused", "Use action words and emotional language"],
   "marketingPoints": ["3-5 unique selling propositions", "What makes this property special", "Why someone should choose this over others"],
   "callToAction": "An urgent, compelling call-to-action that encourages immediate contact"
 }
 
 Guidelines:
+- WORD COUNT REQUIREMENT: The description MUST be ${wordCountRange}. This is non-negotiable.
+- If you're writing a ${finalWordCount} listing, make it ${wordCountRange} - not shorter, not longer.
 - ${toneInstructions}
 - ${styleInstructions}
 - Focus on benefits and lifestyle, not just features
 - Use vivid, descriptive language that helps buyers visualize living there
 - Make it scannable with good flow
-- Avoid generic phrases like "don't miss out" 
+- Avoid generic phrases like "don't miss out"
 - Be specific to this property and location
 - Target the specified audience
 - Create urgency without being pushy`
@@ -163,8 +188,15 @@ Guidelines:
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
+      temperature: 0.8,  // Increased for more variation between styles/tones
       max_tokens: maxTokens,
+      response_format: { type: "json_object" }  // Ensure JSON response without markdown
+    })
+
+    console.log('🤖 OpenAI Response:', {
+      model: 'gpt-4o',
+      tokensUsed: completion.usage?.total_tokens,
+      finishReason: completion.choices[0]?.finish_reason
     })
 
     const content = completion.choices[0]?.message?.content
@@ -301,6 +333,14 @@ export async function POST(request: NextRequest) {
       propertyType: body.propertyType,
       location: body.location,
       features: body.features?.length
+    })
+
+    console.log('🎨 Pro Features Received:', {
+      listingStyle: body.listingStyle,
+      tone: body.tone,
+      wordCount: body.wordCount,
+      includeKeywords: body.includeKeywords,
+      customKeywords: body.customKeywords
     })
 
     // Extract user ID from token FIRST for validation

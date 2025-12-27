@@ -206,6 +206,19 @@ export default function GeneratePage() {
         })
       }
 
+      console.log('📤 Sending to API:', {
+        userPlan,
+        listingStyle,
+        tone,
+        wordCount,
+        includeKeywords,
+        submissionData: {
+          listingStyle: submissionData.listingStyle,
+          tone: submissionData.tone,
+          wordCount: submissionData.wordCount
+        }
+      })
+
       const response = await fetch('/api/generate/listing', {
         method: 'POST',
         headers: {
