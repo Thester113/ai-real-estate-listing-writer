@@ -37,8 +37,7 @@ export default function ContactPage() {
       areaServed: 'US'
     },
     sameAs: [
-      'https://twitter.com/aipropertywriter',
-      'https://linkedin.com/company/aipropertywriter'
+      'https://www.facebook.com/profile.php?id=61585644513349'
     ]
   }
 

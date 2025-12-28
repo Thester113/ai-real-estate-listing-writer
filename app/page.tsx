@@ -47,7 +47,9 @@ export default function HomePage() {
     url: 'https://www.aipropertywriter.com',
     logo: 'https://www.aipropertywriter.com/logo.png',
     description: 'The most advanced AI listing platform for real estate. Generate 3 listing variations, Instagram/Facebook posts, and market-powered copy in seconds. Used by 1,000+ agents.',
-    sameAs: []
+    sameAs: [
+      'https://www.facebook.com/profile.php?id=61585644513349'
+    ]
   }
 
   return (
