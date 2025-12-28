@@ -35,7 +35,84 @@ interface ListingResult {
   callToAction: string
 }
 
-async function generatePropertyListing(formData: ListingFormData): Promise<ListingResult> {
+// Phase 2: Multiple Listing Variations
+interface ListingVariation {
+  variationType: 'professional' | 'storytelling' | 'luxury'
+  variationLabel: string
+  title: string
+  description: string
+  highlights: string[]
+  marketingPoints: string[]
+  callToAction: string
+}
+
+interface EnhancedListingResult extends ListingResult {
+  variations: ListingVariation[]
+}
+
+// Phase 3: Social Media Content
+interface SocialMediaContent {
+  instagram: {
+    caption: string
+    hashtags: string[]
+    characterCount: number
+  }
+  facebook: {
+    post: string
+    characterCount: number
+  }
+}
+
+interface FullListingResponse extends EnhancedListingResult {
+  socialMedia: SocialMediaContent
+}
+
+/**
+ * Build market intelligence instruction for OpenAI prompt (DRY helper function)
+ * @param marketData Market data from Redfin
+ * @returns Formatted market intelligence section for prompt
+ */
+function buildMarketIntelligencePrompt(marketData: any | null): string {
+  if (!marketData) {
+    return ''
+  }
+
+  // Determine market temperature based on demand score
+  const marketTemp = marketData.demandScore >= 70 ? 'HOT (seller\'s market)'
+                   : marketData.demandScore >= 40 ? 'BALANCED'
+                   : 'COOL (buyer\'s market)'
+
+  // Format price change
+  const priceChangeText = marketData.priceChange >= 0
+    ? `up ${marketData.priceChange.toFixed(1)}%`
+    : `down ${Math.abs(marketData.priceChange).toFixed(1)}%`
+
+  // Get top insight
+  const topInsight = marketData.keyInsights?.[0] || 'Standard market conditions'
+
+  return `
+
+MARKET INTELLIGENCE (Pro Feature - Real Redfin Data):
+This property is located in ZIP code ${marketData.location}. Current market conditions:
+- Median sale price in area: $${marketData.medianPrice.toLocaleString()} (${priceChangeText} year-over-year)
+- Average time to sell: ${marketData.daysOnMarket} days
+- Market temperature: ${marketTemp} (${marketData.demandScore}/100 demand score)
+- Key market insight: ${topInsight}
+
+CRITICAL INSTRUCTION: Weave this market data naturally into your listing copy. DO NOT just list statistics. Instead:
+1. If market is HOT (fast sales): Create urgency ("Properties in this area typically sell in ${marketData.daysOnMarket} days - act fast!")
+2. If market is COOL: Emphasize value and opportunity ("Exceptional value in a balanced market")
+3. Position price competitively relative to the $${marketData.medianPrice.toLocaleString()} median
+4. Reference trends organically in the narrative (e.g., "In a market where prices are ${priceChangeText}...")
+5. Use market conditions to strengthen your call-to-action
+
+Make the data feel like insider knowledge, not a statistics report.`
+}
+
+async function generatePropertyListing(
+  formData: ListingFormData,
+  marketData?: any | null
+): Promise<FullListingResponse> {
   const {
     propertyType,
     bedrooms,
@@ -135,13 +212,17 @@ async function generatePropertyListing(formData: ListingFormData): Promise<Listi
     keywordsInstruction = `\n\nSEO Keywords to naturally integrate: ${finalCustomKeywords}\nWeave these keywords naturally into the content without making it feel forced or spammy.`
   }
 
+  // Build market intelligence instruction (Pro feature)
+  const marketIntelligencePrompt = buildMarketIntelligencePrompt(marketData)
+
   // Log the calculated settings
   console.log('📐 Generation Settings:', {
     styleInstructions: styleInstructions.substring(0, 50) + '...',
     toneInstructions: toneInstructions.substring(0, 50) + '...',
     wordCountRange,
     maxTokens,
-    hasKeywords: !!keywordsInstruction
+    hasKeywords: !!keywordsInstruction,
+    hasMarketData: !!marketData
   })
 
   const prompt = `You are a professional real estate copywriter. Create a compelling property listing for the following property:
@@ -155,34 +236,123 @@ Property Details:
 - Price Range: ${priceText}
 - Target Audience: ${targetAudience}
 - Features: ${featuresText}
-- Additional Details: ${additionalDetails || 'None provided'}
+- Additional Details: ${additionalDetails || 'None provided'}${marketIntelligencePrompt}
 
 STYLE: ${styleInstructions}
 TONE: ${toneInstructions}
 LENGTH: ${wordCountRange}${keywordsInstruction}
 
-Create a listing with the following structure. Return ONLY valid JSON in this exact format:
+Generate THREE DISTINCT VERSIONS of this listing AND social media content. Return ONLY valid JSON in this exact format:
 
 {
-  "title": "An attention-grabbing title (max 80 characters)",
-  "description": "A compelling description that tells a story and highlights the lifestyle this property offers. MANDATORY LENGTH: EXACTLY ${wordCountRange}. Count your words carefully - this is critical.",
-  "highlights": ["5-7 key bullet points highlighting the best features", "Each should be concise and benefit-focused", "Use action words and emotional language"],
-  "marketingPoints": ["3-5 unique selling propositions", "What makes this property special", "Why someone should choose this over others"],
-  "callToAction": "An urgent, compelling call-to-action that encourages immediate contact"
+  "variations": [
+    {
+      "variationType": "professional",
+      "variationLabel": "Professional & Direct",
+      "title": "An attention-grabbing title (max 80 characters)",
+      "description": "Direct, fact-focused listing. MANDATORY LENGTH: EXACTLY ${wordCountRange}.",
+      "highlights": ["5-7 benefit-focused bullet points"],
+      "marketingPoints": ["3-5 unique selling propositions"],
+      "callToAction": "Straightforward, action-oriented CTA"
+    },
+    {
+      "variationType": "storytelling",
+      "variationLabel": "Warm & Inviting",
+      "title": "Emotional, lifestyle-focused title (max 80 characters)",
+      "description": "Narrative approach that paints a picture. MANDATORY LENGTH: EXACTLY ${wordCountRange}.",
+      "highlights": ["5-7 lifestyle-focused highlights"],
+      "marketingPoints": ["3-5 emotional selling points"],
+      "callToAction": "Inviting, relationship-focused CTA"
+    },
+    {
+      "variationType": "luxury",
+      "variationLabel": "Luxury Appeal",
+      "title": "Sophisticated, premium title (max 80 characters)",
+      "description": "Elevated vocabulary, exclusivity focus. MANDATORY LENGTH: EXACTLY ${wordCountRange}.",
+      "highlights": ["5-7 prestige-focused highlights"],
+      "marketingPoints": ["3-5 exclusive selling propositions"],
+      "callToAction": "Exclusive, opportunity-focused CTA"
+    }
+  ],
+  "socialMedia": {
+    "instagram": {
+      "caption": "150-200 character caption with 2-3 emojis",
+      "hashtags": ["RealEstate", "DreamHome", "PropertyType", "Location", "ForSale"],
+      "characterCount": 0
+    },
+    "facebook": {
+      "post": "100-150 character engaging hook",
+      "characterCount": 0
+    }
+  }
 }
 
-Guidelines:
-- WORD COUNT REQUIREMENT: The description MUST be ${wordCountRange}. This is non-negotiable.
-- If you're writing a ${finalWordCount} listing, make it ${wordCountRange} - not shorter, not longer.
-- ${toneInstructions}
-- ${styleInstructions}
-- Focus on benefits and lifestyle, not just features
-- Use vivid, descriptive language that helps buyers visualize living there
-- Make it scannable with good flow
-- Avoid generic phrases like "don't miss out"
+Variation Requirements:
+
+Version 1 (Professional & Direct):
+- Tone: Authoritative, fact-focused, no-nonsense
+- Style: Traditional real estate language, emphasis on features and value
+- Lead with key facts (location, size, features)
+- Benefits clearly stated, not overly emotional
+- CTA: Direct and action-oriented ("Schedule your showing today")
+- Target: Serious buyers who want information quickly
+
+Version 2 (Warm & Inviting):
+- Tone: Emotional, narrative-driven, lifestyle-focused
+- Style: Tell a story about life in this home, use sensory details
+- Paint pictures with words ("imagine morning coffee on the deck")
+- Create emotional connection through lifestyle benefits
+- Warm, welcoming language that feels personal
+- CTA: Inviting and relationship-focused ("Let's find your perfect home together")
+- Target: Buyers looking for an emotional connection
+
+Version 3 (Luxury Appeal):
+- Tone: Sophisticated, premium, exclusive (regardless of actual price point)
+- Style: Elevated vocabulary, prestige positioning
+- Use words like "exquisite," "bespoke," "curated," "distinguished"
+- Emphasize exclusivity and lifestyle elevation
+- Position property as aspirational
+- CTA: Exclusive opportunity-focused ("Discover an extraordinary opportunity")
+- Target: Buyers who respond to luxury positioning
+
+General Guidelines:
+- WORD COUNT: Each description MUST be ${wordCountRange}. Non-negotiable.
+- Make each version MEANINGFULLY DIFFERENT - not just minor word swaps
+- Apply base style (${styleInstructions}) within each variation's approach
+- All variations target ${targetAudience} but with different angles
 - Be specific to this property and location
-- Target the specified audience
-- Create urgency without being pushy`
+- Each variation should be independently excellent
+
+Social Media Requirements:
+
+INSTAGRAM POST:
+- Caption: 150-200 characters MAXIMUM (strict limit)
+- Start with attention-grabbing hook or question
+- Include 2-3 relevant emojis naturally integrated (e.g., 🏡✨🔑)
+- Focus on ONE key selling point or lifestyle benefit
+- Create visual appeal and curiosity
+- DO NOT include hashtags in caption - they go in separate field
+- characterCount will be calculated by system
+
+INSTAGRAM HASHTAGS:
+- Provide 5-8 strategic hashtags (no # symbol needed)
+- Mix broad tags (#RealEstate, #HomeSale) and specific (#${location.replace(/\s/g, '')}Homes, #${propertyType.replace(/\s/g, '')})
+- Include location-based tags, property type tags
+- Use proper camelCase format (e.g., DreamHome not dream-home)
+
+FACEBOOK POST:
+- Length: 100-150 characters
+- Create curiosity with a question or bold statement
+- More conversational than Instagram
+- Should work well above a link preview
+- Max 1-2 emojis (less emoji-heavy than Instagram)
+- Focus on engagement and click-through
+- characterCount will be calculated by system
+
+Examples:
+Instagram caption: "Wake up to mountain views every morning in this stunning 3BR retreat. Your dream home awaits in Boulder. ⛰️✨🏡"
+Instagram hashtags: ["BoulderRealEstate", "MountainLiving", "DreamHome", "ColoradoHomes", "LuxuryLiving"]
+Facebook: "Is this the view you've been dreaming of? This Boulder gem just hit the market. 🏡"`
 
   try {
     const completion = await openai.chat.completions.create({
@@ -204,34 +374,124 @@ Guidelines:
       throw new Error('No content generated')
     }
 
-    // Parse the JSON response
-    const result = JSON.parse(content) as ListingResult
-    
-    // Validate required fields
-    if (!result.title || !result.description || !result.highlights || !result.marketingPoints || !result.callToAction) {
-      throw new Error('Missing required fields in generated content')
+    // Parse the JSON response (expecting variations + social media)
+    const parsedResponse = JSON.parse(content) as {
+      variations: ListingVariation[]
+      socialMedia: SocialMediaContent
     }
 
-    return result
+    // Validate variations array
+    if (!parsedResponse.variations || !Array.isArray(parsedResponse.variations) || parsedResponse.variations.length !== 3) {
+      console.error('Invalid variations structure:', parsedResponse)
+      throw new Error('Expected 3 listing variations in response')
+    }
+
+    // Validate each variation has required fields
+    for (const variation of parsedResponse.variations) {
+      if (!variation.title || !variation.description || !variation.highlights || !variation.marketingPoints || !variation.callToAction) {
+        throw new Error('Missing required fields in variation')
+      }
+    }
+
+    // Validate social media content
+    if (!parsedResponse.socialMedia || !parsedResponse.socialMedia.instagram || !parsedResponse.socialMedia.facebook) {
+      console.error('Missing social media content:', parsedResponse)
+      throw new Error('Expected social media content in response')
+    }
+
+    // Calculate character counts for social media
+    parsedResponse.socialMedia.instagram.characterCount = parsedResponse.socialMedia.instagram.caption.length
+    parsedResponse.socialMedia.facebook.characterCount = parsedResponse.socialMedia.facebook.post.length
+
+    // For backward compatibility: top-level fields = first variation (Professional)
+    const primaryVariation = parsedResponse.variations[0]
+
+    const fullResponse: FullListingResponse = {
+      title: primaryVariation.title,
+      description: primaryVariation.description,
+      highlights: primaryVariation.highlights,
+      marketingPoints: primaryVariation.marketingPoints,
+      callToAction: primaryVariation.callToAction,
+      variations: parsedResponse.variations,
+      socialMedia: parsedResponse.socialMedia
+    }
+
+    console.log('✅ Generated 3 variations + social media:', {
+      variations: parsedResponse.variations.map(v => v.variationType),
+      instagram: `${parsedResponse.socialMedia.instagram.characterCount} chars`,
+      facebook: `${parsedResponse.socialMedia.facebook.characterCount} chars`
+    })
+
+    return fullResponse
   } catch (error) {
     console.error('OpenAI generation failed:', error)
-    
-    // Fallback to a professional template if OpenAI fails
-    return {
-      title: `${bedrooms}BR/${bathrooms}BA ${propertyType} in ${location}`,
-      description: `Discover this exceptional ${propertyType.toLowerCase()} offering ${bedrooms} bedrooms and ${bathrooms} bathrooms in the desirable ${location} area. This property combines modern comfort with thoughtful design, creating the perfect space for your lifestyle. ${additionalDetails || 'Schedule your viewing today to experience all this home has to offer.'}`,
-      highlights: [
-        `${bedrooms} well-appointed bedrooms`,
-        `${bathrooms} bathrooms with modern fixtures`,
-        `Prime ${location} location`,
-        ...(features?.slice(0, 4) || ['Move-in ready condition'])
-      ],
-      marketingPoints: [
-        `Desirable ${location} neighborhood`,
-        'Modern amenities and finishes',
-        'Perfect for your lifestyle needs'
-      ],
+
+    // Fallback: Create 3 basic variations even on error (production safety)
+    const baseTitle = `${bedrooms}BR/${bathrooms}BA ${propertyType} in ${location}`
+    const baseDescription = `Discover this exceptional ${propertyType.toLowerCase()} offering ${bedrooms} bedrooms and ${bathrooms} bathrooms in the desirable ${location} area. This property combines modern comfort with thoughtful design, creating the perfect space for your lifestyle. ${additionalDetails || 'Schedule your viewing today to experience all this home has to offer.'}`
+    const baseHighlights = [
+      `${bedrooms} well-appointed bedrooms`,
+      `${bathrooms} bathrooms with modern fixtures`,
+      `Prime ${location} location`,
+      ...(features?.slice(0, 4) || ['Move-in ready condition'])
+    ]
+    const baseMarketingPoints = [
+      `Desirable ${location} neighborhood`,
+      'Modern amenities and finishes',
+      'Perfect for your lifestyle needs'
+    ]
+
+    const professionalVariation: ListingVariation = {
+      variationType: 'professional',
+      variationLabel: 'Professional & Direct',
+      title: baseTitle,
+      description: baseDescription,
+      highlights: baseHighlights,
+      marketingPoints: baseMarketingPoints,
       callToAction: 'Contact us today to schedule your private showing!'
+    }
+
+    const storytellingVariation: ListingVariation = {
+      variationType: 'storytelling',
+      variationLabel: 'Warm & Inviting',
+      title: `Your New Home Awaits: ${bedrooms}BR/${bathrooms}BA ${propertyType}`,
+      description: `Imagine coming home to this wonderful ${propertyType.toLowerCase()} in ${location}. With ${bedrooms} comfortable bedrooms and ${bathrooms} bathrooms, this home is ready to welcome you and your loved ones. ${additionalDetails || 'Come see why this could be your perfect home.'}`,
+      highlights: baseHighlights,
+      marketingPoints: baseMarketingPoints,
+      callToAction: 'Let us help you find your perfect home - schedule a visit today!'
+    }
+
+    const luxuryVariation: ListingVariation = {
+      variationType: 'luxury',
+      variationLabel: 'Luxury Appeal',
+      title: `Exceptional ${propertyType} - ${bedrooms}BR/${bathrooms}BA`,
+      description: `Experience refined living in this distinguished ${propertyType.toLowerCase()} showcasing ${bedrooms} elegant bedrooms and ${bathrooms} bathrooms in the sought-after ${location} area. This residence offers an exceptional opportunity for discerning buyers. ${additionalDetails || 'Discover the possibilities that await.'}`,
+      highlights: baseHighlights,
+      marketingPoints: baseMarketingPoints,
+      callToAction: 'Discover this exceptional opportunity - contact us today!'
+    }
+
+    // Fallback social media content
+    const fallbackSocial: SocialMediaContent = {
+      instagram: {
+        caption: `${bedrooms}BR/${bathrooms}BA ${propertyType} in ${location}. Your dream home is waiting! 🏡✨`,
+        hashtags: ['RealEstate', 'DreamHome', 'ForSale', location.replace(/\s/g, ''), propertyType.replace(/\s/g, '')].slice(0, 8),
+        characterCount: 0
+      },
+      facebook: {
+        post: `New listing alert! ${bedrooms}BR/${bathrooms}BA ${propertyType} in ${location}. See it today! 🏡`,
+        characterCount: 0
+      }
+    }
+
+    // Calculate character counts
+    fallbackSocial.instagram.characterCount = fallbackSocial.instagram.caption.length
+    fallbackSocial.facebook.characterCount = fallbackSocial.facebook.post.length
+
+    return {
+      ...professionalVariation,
+      variations: [professionalVariation, storytellingVariation, luxuryVariation],
+      socialMedia: fallbackSocial
     }
   }
 }
@@ -410,6 +670,43 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Usage check passed: ${currentUsage}/${monthlyLimit}`)
 
+    // Fetch market data for Pro users (Phase 1: Market Data Injection)
+    let marketData = null
+    let zipCode: string | null = null
+
+    if (userPlan === 'pro') {
+      try {
+        const { extractZipCode } = await import('@/lib/real-estate-api')
+        const { getRedfinMarketData } = await import('@/lib/redfin-data')
+
+        zipCode = extractZipCode(body.location)
+
+        if (zipCode) {
+          console.log(`📊 [Market Data] Fetching Redfin data for ZIP ${zipCode} (Pro user)`)
+          marketData = await getRedfinMarketData(zipCode, body.propertyType || 'All Residential')
+
+          if (marketData) {
+            console.log(`✅ [Market Data] Successfully fetched:`, {
+              medianPrice: marketData.medianPrice,
+              daysOnMarket: marketData.daysOnMarket,
+              demandScore: marketData.demandScore,
+              priceChange: marketData.priceChange
+            })
+          } else {
+            console.log(`⚠️ [Market Data] No data available for ZIP ${zipCode}`)
+          }
+        } else {
+          console.log(`⚠️ [Market Data] No ZIP code found in location: "${body.location}"`)
+        }
+      } catch (error) {
+        console.warn('⚠️ [Market Data] Failed to fetch, proceeding without it:', error)
+        // Graceful degradation - continue without market data
+        marketData = null
+      }
+    } else {
+      console.log(`ℹ️ [Market Data] Skipping for Starter plan user`)
+    }
+
     // Validate Pro-only features
     const proFeatures = {
       listingStyle: body.listingStyle,
@@ -473,8 +770,8 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Pro features validation passed')
 
-    // NOW generate the listing after all validation has passed
-    const result = await generatePropertyListing(body)
+    // NOW generate the listing after all validation has passed (with market data if available)
+    const result = await generatePropertyListing(body, marketData)
     const wordCount = countWords(result)
 
     console.log('✅ Listing generation successful')
@@ -503,8 +800,17 @@ export async function POST(request: NextRequest) {
                 listingStyle: body.listingStyle || 'standard',
                 tone: body.tone || 'professional',
                 wordCount: body.wordCount || 'standard',
-                keywords: body.includeKeywords || false
-              }
+                keywords: body.includeKeywords || false,
+                marketDataInjected: !!marketData,
+                zipCode: zipCode || null
+              },
+              marketContext: marketData ? {
+                zipCode,
+                medianPrice: marketData.medianPrice,
+                daysOnMarket: marketData.daysOnMarket,
+                demandScore: marketData.demandScore,
+                priceChange: marketData.priceChange
+              } : null
             }
           })
           .select('*')
@@ -548,7 +854,19 @@ export async function POST(request: NextRequest) {
         remainingGenerations: remainingGenerations,
         monthlyLimit: monthlyLimit,
         currentUsage: currentUsage + 1,
-        plan: userPlan
+        plan: userPlan,
+        marketContext: marketData ? {
+          zipCode,
+          medianPrice: marketData.medianPrice,
+          priceChange: marketData.priceChange,
+          daysOnMarket: marketData.daysOnMarket,
+          marketTemperature: marketData.demandScore >= 70 ? 'hot' : marketData.demandScore >= 40 ? 'balanced' : 'cool',
+          demandScore: marketData.demandScore,
+          dataInjected: true
+        } : {
+          dataInjected: false,
+          zipCode: zipCode || null
+        }
       }
     })
 

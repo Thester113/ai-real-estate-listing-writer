@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -187,8 +188,15 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="text-xl font-bold">
-                PropertyWriter
+              <Link href="/" className="flex items-center gap-2">
+                <Image
+                  src="/logo.svg"
+                  alt="AI Property Writer"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                />
+                <span className="text-xl font-bold">AI Property Writer</span>
               </Link>
               <div className="flex items-center space-x-2">
                 {profile.plan === 'pro' ? (
@@ -317,26 +325,26 @@ export default function Dashboard() {
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <div className="space-y-3">
-              <Button asChild className="w-full">
-                <Link href="/generate">
+              <Link href="/generate">
+                <Button className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
                   New Listing
-                </Link>
-              </Button>
+                </Button>
+              </Link>
               {profile.plan === 'pro' ? (
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/generate/bulk">
+                <Link href="/generate/bulk">
+                  <Button variant="outline" className="w-full">
                     <Upload className="h-4 w-4 mr-2" />
                     Bulk Generation
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               ) : (
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/pricing">
+                <Link href="/pricing">
+                  <Button variant="outline" className="w-full">
                     <Crown className="h-4 w-4 mr-2" />
                     Upgrade to Pro
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
@@ -433,8 +441,10 @@ export default function Dashboard() {
                         <span className="capitalize">{generation.metadata.plan} plan</span>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      View
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/history?id=${generation.id}`}>
+                        View
+                      </Link>
                     </Button>
                   </div>
                 </div>

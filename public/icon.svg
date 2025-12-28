@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5DADE2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1565C0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Hexagonal border (simplified) -->
+  <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" stroke="url(#iconGradient)" stroke-width="2.5" fill="none"/>
+
+  <!-- Simplified house -->
+  <path d="M10 12L16 8L22 12V22H10V12Z" fill="url(#iconGradient)"/>
+
+  <!-- Door -->
+  <rect x="12" y="18" width="3" height="4" fill="#FFFFFF"/>
+
+  <!-- Pen nib hint -->
+  <path d="M22 20L24 22L23 25L22 20Z" fill="url(#iconGradient)"/>
+  <circle cx="23" cy="23" r="1" fill="#FFFFFF"/>
+</svg>

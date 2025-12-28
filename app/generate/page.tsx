@@ -36,12 +36,36 @@ interface ListingFormData {
   includeKeywords?: boolean
 }
 
+interface ListingVariation {
+  variationType: 'professional' | 'storytelling' | 'luxury'
+  variationLabel: string
+  title: string
+  description: string
+  highlights: string[]
+  marketingPoints: string[]
+  callToAction: string
+}
+
+interface SocialMediaContent {
+  instagram: {
+    caption: string
+    hashtags: string[]
+    characterCount: number
+  }
+  facebook: {
+    post: string
+    characterCount: number
+  }
+}
+
 interface ListingResult {
   title: string
   description: string
   highlights: string[]
   marketingPoints: string[]
   callToAction: string
+  variations?: ListingVariation[] // Phase 2: Multiple variations
+  socialMedia?: SocialMediaContent // Phase 3: Social media posts
 }
 
 const propertyTypes = [
@@ -119,6 +143,8 @@ export default function GeneratePage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState<ListingResult | null>(null)
+  const [resultMeta, setResultMeta] = useState<any | null>(null) // Store API metadata
+  const [selectedVariation, setSelectedVariation] = useState(0) // Track which variation is shown
   const [listingStyle, setListingStyle] = useState('standard')
   const [tone, setTone] = useState('professional')
   const [wordCount, setWordCount] = useState('standard')
@@ -235,9 +261,17 @@ export default function GeneratePage() {
       }
 
       setResult(data.data)
+      setResultMeta(data.meta) // Store metadata including market context
+      setSelectedVariation(0) // Reset to first variation
+
+      const variationsNotice = data.data.variations ? ` (${data.data.variations.length} variations)` : ''
+      const marketDataNotice = data.meta.marketContext?.dataInjected
+        ? ` + market data from ZIP ${data.meta.marketContext.zipCode}`
+        : ''
+
       toast({
         title: 'Listing generated!',
-        description: `Created a ${data.meta.wordCount}-word listing with ${data.meta.tokensUsed} AI tokens`
+        description: `Created ${data.meta.wordCount}-word listing${variationsNotice}${marketDataNotice}`
       })
 
     } catch (error) {
@@ -299,6 +333,7 @@ export default function GeneratePage() {
 
   const generateNewListing = () => {
     setResult(null)
+    setResultMeta(null) // Clear metadata too
     setFormData({
       propertyType: '',
       bedrooms: 3,
@@ -711,107 +746,211 @@ export default function GeneratePage() {
             {result ? (
               <div className="bg-card border rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold">Generated Listing</h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-semibold">Generated Listing</h2>
+                    {resultMeta?.marketContext?.dataInjected && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        📊 Enhanced with Market Data
+                      </span>
+                    )}
+                  </div>
                   <Button onClick={generateNewListing} variant="outline" size="sm">
                     Generate New
                   </Button>
                 </div>
 
+                {/* Variation Tabs (Phase 2) */}
+                {result.variations && result.variations.length > 0 && (
+                  <div className="border-b mb-6">
+                    <div className="flex space-x-1">
+                      {result.variations.map((variation, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedVariation(index)}
+                          className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${
+                            selectedVariation === index
+                              ? 'border-primary text-primary bg-primary/5'
+                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                          }`}
+                        >
+                          {variation.variationLabel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-6">
-                  {/* Title */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Title</label>
-                    <div className="p-3 bg-secondary rounded-md relative group">
-                      <p className="font-medium">{result.title}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => copyToClipboard(result.title)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                  {/* Get current variation data (DRY helper) */}
+                  {(() => {
+                    const currentVariation = result.variations && result.variations[selectedVariation]
+                      ? result.variations[selectedVariation]
+                      : result // Backward compatibility
 
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Description</label>
-                    <div className="p-3 bg-secondary rounded-md relative group">
-                      <p className="whitespace-pre-wrap">{result.description}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => copyToClipboard(result.description)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                    return (
+                      <>
+                        {/* Title */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Title</label>
+                          <div className="p-3 bg-secondary rounded-md relative group">
+                            <p className="font-medium">{currentVariation.title}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => copyToClipboard(currentVariation.title)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* Highlights */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Key Highlights</label>
-                    <div className="p-3 bg-secondary rounded-md relative group">
-                      <ul className="list-disc list-inside space-y-1">
-                        {result.highlights.map((highlight, index) => (
-                          <li key={index} className="text-sm">{highlight}</li>
-                        ))}
-                      </ul>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => copyToClipboard(result.highlights.join('\n• '))}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                        {/* Description */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Description</label>
+                          <div className="p-3 bg-secondary rounded-md relative group">
+                            <p className="whitespace-pre-wrap">{currentVariation.description}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => copyToClipboard(currentVariation.description)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* Marketing Points */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Marketing Points</label>
-                    <div className="p-3 bg-secondary rounded-md relative group">
-                      <ul className="list-disc list-inside space-y-1">
-                        {result.marketingPoints.map((point, index) => (
-                          <li key={index} className="text-sm">{point}</li>
-                        ))}
-                      </ul>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => copyToClipboard(result.marketingPoints.join('\n• '))}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                        {/* Highlights */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Key Highlights</label>
+                          <div className="p-3 bg-secondary rounded-md relative group">
+                            <ul className="list-disc list-inside space-y-1">
+                              {currentVariation.highlights.map((highlight, index) => (
+                                <li key={index} className="text-sm">{highlight}</li>
+                              ))}
+                            </ul>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => copyToClipboard(currentVariation.highlights.join('\n• '))}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* Call to Action */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Call to Action</label>
-                    <div className="p-3 bg-secondary rounded-md relative group">
-                      <p className="font-medium text-primary">{result.callToAction}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => copyToClipboard(result.callToAction)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                        {/* Marketing Points */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Marketing Points</label>
+                          <div className="p-3 bg-secondary rounded-md relative group">
+                            <ul className="list-disc list-inside space-y-1">
+                              {currentVariation.marketingPoints.map((point, index) => (
+                                <li key={index} className="text-sm">{point}</li>
+                              ))}
+                            </ul>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => copyToClipboard(currentVariation.marketingPoints.join('\n• '))}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* Export Options */}
-                  <div>
-                    <label className="block text-sm font-medium mb-3">Export Options</label>
-                    <ExportOptions listing={result} userPlan={userPlan as 'starter' | 'pro'} />
-                  </div>
+                        {/* Call to Action */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Call to Action</label>
+                          <div className="p-3 bg-secondary rounded-md relative group">
+                            <p className="font-medium text-primary">{currentVariation.callToAction}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => copyToClipboard(currentVariation.callToAction)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Export Options */}
+                        <div>
+                          <label className="block text-sm font-medium mb-3">Export Options</label>
+                          <ExportOptions listing={currentVariation} userPlan={userPlan as 'starter' | 'pro'} />
+                        </div>
+                      </>
+                    )
+                  })()}
                 </div>
+
+                {/* Social Media Posts (Phase 3) */}
+                {result.socialMedia && (
+                  <div className="mt-6 bg-card border rounded-lg shadow-sm p-6">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      📱 Social Media Posts
+                      <span className="text-xs font-normal px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                        Ready to Share
+                      </span>
+                    </h3>
+
+                    {/* Instagram */}
+                    <div className="mb-4 p-4 border border-purple-200 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium flex items-center gap-2 text-purple-900">
+                          <span>📷</span> Instagram
+                        </h4>
+                        <span className="text-xs text-purple-700">
+                          {result.socialMedia.instagram.characterCount} characters
+                        </span>
+                      </div>
+                      <p className="text-sm mb-3 text-purple-900">{result.socialMedia.instagram.caption}</p>
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {result.socialMedia.instagram.hashtags.map((tag, i) => (
+                          <span key={i} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-purple-300 hover:bg-purple-100"
+                        onClick={() => copyToClipboard(
+                          `${result.socialMedia?.instagram.caption}\n\n${result.socialMedia?.instagram.hashtags.map(t => `#${t}`).join(' ')}`
+                        )}
+                      >
+                        <Copy className="h-3 w-3 mr-2" />
+                        Copy Instagram Post
+                      </Button>
+                    </div>
+
+                    {/* Facebook */}
+                    <div className="p-4 border border-blue-200 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium flex items-center gap-2 text-blue-900">
+                          <span>👍</span> Facebook
+                        </h4>
+                        <span className="text-xs text-blue-700">
+                          {result.socialMedia.facebook.characterCount} characters
+                        </span>
+                      </div>
+                      <p className="text-sm mb-3 text-blue-900">{result.socialMedia.facebook.post}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-blue-300 hover:bg-blue-100"
+                        onClick={() => copyToClipboard(result.socialMedia?.facebook.post || '')}
+                      >
+                        <Copy className="h-3 w-3 mr-2" />
+                        Copy Facebook Post
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-card border rounded-lg shadow-sm p-12 text-center">

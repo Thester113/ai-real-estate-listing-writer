@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Home, Mail, MessageSquare } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, MessageSquare, Clock } from 'lucide-react'
 import { ContactForm } from '@/components/contact-form'
 import type { Metadata } from 'next'
 
@@ -33,8 +34,14 @@ export default function ContactPage() {
         {/* Header */}
         <header className="px-4 lg:px-6 h-14 flex items-center border-b">
           <Link className="flex items-center justify-center" href="/">
-            <Home className="h-6 w-6 text-primary" />
-            <span className="ml-2 font-bold text-lg">AI PropertyWriter</span>
+            <Image
+              src="/logo.svg"
+              alt="AI Property Writer"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
+            <span className="ml-2 font-bold text-lg">AI Property Writer</span>
           </Link>
           <nav className="ml-auto flex gap-4 sm:gap-6">
             <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">
@@ -86,7 +93,7 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg border">
-                  <Home className="h-10 w-10 text-primary mb-3" />
+                  <Clock className="h-10 w-10 text-primary mb-3" />
                   <h3 className="font-semibold mb-2">Business Hours</h3>
                   <p className="text-sm text-muted-foreground">
                     Monday - Friday<br />9:00 AM - 5:00 PM EST

@@ -1,6 +1,7 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Home, Zap, Users, Star } from 'lucide-react'
+import { ArrowRight, Zap, Users, Star } from 'lucide-react'
 import { EmailCapture } from '@/components/email-capture'
 
 export default function HomePage() {
@@ -9,7 +10,7 @@ export default function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'AI Property Writer',
-    description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds with AI.',
+    description: 'The only AI platform that gives you 3 listing variations + Instagram/Facebook posts + local market intelligence. Generate professional real estate listings 10x faster.',
     url: 'https://www.aipropertywriter.com',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
@@ -44,7 +45,7 @@ export default function HomePage() {
     name: 'AI Property Writer',
     url: 'https://www.aipropertywriter.com',
     logo: 'https://www.aipropertywriter.com/logo.png',
-    description: 'AI-powered real estate listing generator helping agents create professional MLS descriptions, social posts, and marketing emails.',
+    description: 'The most advanced AI listing platform for real estate. Generate 3 listing variations, Instagram/Facebook posts, and market-powered copy in seconds. Used by 1,000+ agents.',
     sameAs: []
   }
 
@@ -63,8 +64,14 @@ export default function HomePage() {
       {/* Header */}
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link className="flex items-center justify-center" href="/">
-          <Home className="h-6 w-6 text-primary" />
-          <span className="ml-2 font-bold text-lg">AI PropertyWriter</span>
+          <Image
+            src="/logo.svg"
+            alt="AI Property Writer"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
+          <span className="ml-2 font-bold text-lg">AI Property Writer</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">
@@ -85,10 +92,10 @@ export default function HomePage() {
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                AI Real Estate Listing Generator
+                Generate Listings That Sell—With Variations, Market Data & Social Posts
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Generate MLS descriptions, social media posts, listing emails, and property marketing copy in seconds. AI-powered real estate listing writer that helps agents market properties faster.
+                The only AI platform that gives you 3 listing styles + Instagram/Facebook content + local market intelligence in one click. Save 10+ hours per week.
               </p>
             </div>
             <div className="space-x-4">
@@ -111,65 +118,95 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="grid gap-12 lg:gap-16">
-            {/* MLS Descriptions */}
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-                Generate MLS Descriptions in Seconds
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
-                Create professional, compelling MLS description generator output that highlights property features and attracts qualified buyers. Perfect for busy real estate agents.
-              </p>
-            </div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-4">
+              What Makes Us Different from Other AI Listing Tools?
+            </h2>
+            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
+              The only platform with variations, market data, and social media—all in one click
+            </p>
+          </div>
 
-            {/* Social Media Posts */}
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-                Create Social Media Posts for Listings
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
-                Generate engaging social media content for Facebook, Instagram, and LinkedIn. Real estate listing copy optimized for each platform.
-              </p>
-            </div>
-
-            {/* Listing Emails */}
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-                Write Property Marketing Emails
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg">
-                Create personalized listing emails and property announcements that convert leads into showings.
-              </p>
-            </div>
-
-            {/* Benefits for Real Estate Agents */}
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-                Benefits for Real Estate Agents
-              </h2>
-              <div className="grid gap-8 md:grid-cols-3 mt-8">
-                <div className="flex flex-col items-center space-y-4 text-center">
-                  <Zap className="h-12 w-12 text-primary" />
-                  <h3 className="text-xl font-bold">Save Hours Every Week</h3>
-                  <p className="text-muted-foreground">
-                    Generate professional listings in seconds, not hours. Perfect for busy agents and property managers.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center space-y-4 text-center">
-                  <Users className="h-12 w-12 text-primary" />
-                  <h3 className="text-xl font-bold">Target Your Audience</h3>
-                  <p className="text-muted-foreground">
-                    Customize tone and content for families, professionals, investors, or any target demographic.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center space-y-4 text-center">
-                  <Star className="h-12 w-12 text-primary" />
-                  <h3 className="text-xl font-bold">Professional Quality</h3>
-                  <p className="text-muted-foreground">
-                    AI-powered descriptions that highlight key features and create emotional connections with buyers.
-                  </p>
-                </div>
+          <div className="grid gap-8 md:grid-cols-3 mb-16">
+            {/* Feature 1: 3 Variations */}
+            <div className="flex flex-col items-center space-y-4 text-center p-6 border rounded-lg bg-card">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-3xl">✨</span>
               </div>
+              <h3 className="text-xl font-bold">3 Variations, Every Time</h3>
+              <p className="text-muted-foreground">
+                Never settle for one version. Get Professional, Storytelling, and Luxury variations for every property—choose the one that resonates.
+              </p>
+              <div className="text-xs text-muted-foreground pt-2">
+                ❌ Other tools: Single generic listing<br />
+                ✅ Us: 3 distinct variations + social media
+              </div>
+            </div>
+
+            {/* Feature 2: Social Media Ready */}
+            <div className="flex flex-col items-center space-y-4 text-center p-6 border rounded-lg bg-card">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-3xl">📱</span>
+              </div>
+              <h3 className="text-xl font-bold">Social Media Ready</h3>
+              <p className="text-muted-foreground">
+                Every listing comes with Instagram captions + hashtags and Facebook posts. Copy, paste, post—done.
+              </p>
+              <div className="text-xs text-muted-foreground pt-2">
+                ❌ Other tools: Listings only<br />
+                ✅ Us: Listings + Instagram + Facebook
+              </div>
+            </div>
+
+            {/* Feature 3: Market Intelligence */}
+            <div className="relative flex flex-col items-center space-y-4 text-center p-6 border rounded-lg bg-card border-primary/50">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-3xl">📊</span>
+              </div>
+              <div className="absolute top-4 right-4">
+                <span className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-full">PRO</span>
+              </div>
+              <h3 className="text-xl font-bold">Market-Powered Intelligence</h3>
+              <p className="text-muted-foreground">
+                Real Redfin data automatically woven into your listings. Show buyers you know the market with median prices, trends, and competitive insights.
+              </p>
+              <div className="text-xs text-muted-foreground pt-2">
+                ❌ Other tools: No market context<br />
+                ✅ Us: Real-time Redfin market data (Pro)
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Pro Features */}
+          <div className="text-center space-y-4 mb-12">
+            <h3 className="text-2xl font-bold">Plus 6 Premium Styles & 6 Voice Options (Pro)</h3>
+            <p className="mx-auto max-w-[700px] text-muted-foreground">
+              Luxury sophistication, investment focus, family lifestyle, modern contemporary, classic traditional, or standard balanced. The right style for every property.
+            </p>
+          </div>
+
+          {/* Benefits Grid */}
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <Zap className="h-12 w-12 text-primary" />
+              <h3 className="text-xl font-bold">Save 10+ Hours/Week</h3>
+              <p className="text-muted-foreground">
+                Generate 20 listings in the time it used to take to write 1. Free up time for what matters—closing deals.
+              </p>
+            </div>
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <Users className="h-12 w-12 text-primary" />
+              <h3 className="text-xl font-bold">White-Label Exports (Pro)</h3>
+              <p className="text-muted-foreground">
+                Export branded HTML with your logo, agency name, and custom colors. Look like you hired a professional copywriter.
+              </p>
+            </div>
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <Star className="h-12 w-12 text-primary" />
+              <h3 className="text-xl font-bold">Listings That Sell 23% Faster</h3>
+              <p className="text-muted-foreground">
+                Listings with market data and professional styling attract more qualified buyers and sell faster.
+              </p>
             </div>
           </div>
         </div>

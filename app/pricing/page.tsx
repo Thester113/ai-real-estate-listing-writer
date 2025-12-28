@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
 import { Check, Crown, Zap, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface User {
   id: string
@@ -26,37 +27,49 @@ const plans = [
     id: 'starter',
     price: 0,
     period: 'month',
-    description: 'Perfect for getting started with AI-generated listings',
+    description: 'Perfect for new agents or occasional listings',
     features: [
       '20 listings per month',
-      'Basic AI copywriting',
-      'Standard templates',
-      'Email support',
-      'Basic analytics'
+      '✨ 3 variations per listing (Professional, Storytelling, Luxury)',
+      '📱 Instagram + Facebook posts for each listing',
+      'Standard listing style',
+      'Professional tone',
+      '150-200 word descriptions',
+      'Basic copy-to-clipboard export',
+      'Email support'
     ],
     limitations: [
-      'Limited to 20 listings/month',
-      'Basic AI model only',
-      'No priority support'
+      'No market data integration',
+      'Limited to standard style',
+      'Basic word count only'
     ],
     cta: 'Current Plan',
     popular: false
   },
   {
     name: 'Pro',
-    id: 'pro', 
+    id: 'pro',
     price: 29,
     period: 'month',
-    description: 'For professionals who need more power and flexibility',
+    description: 'For serious agents who want every advantage',
     features: [
-      '500 listings per month',
-      'Advanced AI copywriting',
-      'Premium templates',
-      'Priority support',
-      'Advanced analytics',
-      'Custom target audiences',
-      'A/B testing insights',
-      'Export to multiple formats'
+      '500 listings per month (unlimited for most agents)',
+      '✨ 3 variations per listing (Professional, Storytelling, Luxury)',
+      '📱 Instagram + Facebook posts for each listing',
+      '📊 Market Intelligence Integration (Redfin data)',
+      '  → Real-time median prices, days on market',
+      '  → Market temperature & competitive positioning',
+      '🎨 6 Premium Listing Styles',
+      '  → Luxury, Investment, Family, Modern, Traditional, Standard',
+      '🎤 6 Tone & Voice Options',
+      '  → Conversational, Upscale, Warm, Energetic, Authoritative',
+      '📏 3 Content Length Options (150-500 words)',
+      '🔍 SEO Keyword Optimization',
+      '📦 Bulk Generation (CSV upload)',
+      '🏷️ White-Label Branded Exports',
+      '  → Custom agent/agency branding in HTML',
+      'Advanced Analytics Dashboard',
+      'Priority Support'
     ],
     limitations: [],
     cta: 'Upgrade to Pro',
@@ -253,8 +266,15 @@ export default function PricingPage() {
       <header className="bg-background/80 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold">
-              PropertyWriter
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/logo.svg"
+                alt="AI Property Writer"
+                width={32}
+                height={32}
+                className="h-8 w-8"
+              />
+              <span className="text-xl font-bold">AI Property Writer</span>
             </Link>
             <div className="flex items-center space-x-4">
               {user ? (
