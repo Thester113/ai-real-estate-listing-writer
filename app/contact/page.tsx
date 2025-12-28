@@ -23,11 +23,34 @@ export default function ContactPage() {
     url: 'https://www.aipropertywriter.com/contact',
   }
 
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'AI Property Writer',
+    url: 'https://www.aipropertywriter.com',
+    logo: 'https://www.aipropertywriter.com/logo.svg',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'support@aipropertywriter.com',
+      contactType: 'Customer Support',
+      availableLanguage: 'English',
+      areaServed: 'US'
+    },
+    sameAs: [
+      'https://twitter.com/aipropertywriter',
+      'https://linkedin.com/company/aipropertywriter'
+    ]
+  }
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
 
       <div className="flex flex-col min-h-screen">

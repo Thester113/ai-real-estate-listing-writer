@@ -12,11 +12,11 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'AI Property Writer – Generate Real Estate Listing Copy Instantly',
+    default: 'AI Property Writer – 3 Variations + Social Posts + Market Data',
     template: '%s | AI Property Writer'
   },
-  description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds. AIPropertyWriter helps real estate agents market properties faster with AI.',
-  keywords: ['AI real estate listing writer', 'MLS description generator', 'real estate listing copy', 'property marketing AI', 'real estate copywriting', 'listing generator', 'real estate marketing'],
+  description: 'The only AI platform that generates 3 listing variations, Instagram/Facebook posts, and market-powered copy instantly. Save 10+ hours per week with professional real estate copywriting.',
+  keywords: ['AI real estate listing writer', 'MLS description generator', 'real estate listing copy', 'property marketing AI', 'real estate copywriting', 'listing generator', 'real estate marketing', 'social media for real estate', 'Instagram real estate posts', 'market data listings'],
   authors: [{ name: 'AI PropertyWriter' }],
   creator: 'AI PropertyWriter',
   publisher: 'AI PropertyWriter',
@@ -39,23 +39,23 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.aipropertywriter.com',
-    title: 'AI Property Writer – Generate Real Estate Listing Copy Instantly',
-    description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds. AIPropertyWriter helps real estate agents market properties faster with AI.',
+    title: 'AI Property Writer – 3 Variations + Social Posts + Market Data',
+    description: 'The only AI platform that generates 3 listing variations, Instagram/Facebook posts, and market-powered copy instantly. Save 10+ hours per week.',
     siteName: 'AI Property Writer',
     images: [
       {
-        url: 'https://www.aipropertywriter.com/og-image.png',
+        url: 'https://www.aipropertywriter.com/og-image.svg',
         width: 1200,
         height: 630,
-        alt: 'AI Property Writer - Real Estate Listing Generator',
+        alt: 'AI Property Writer - 3 Variations, Social Posts, Market Intelligence',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Property Writer – Generate Real Estate Listing Copy Instantly',
-    description: 'Generate MLS descriptions, real estate listing copy, social posts, and property marketing emails in seconds.',
-    images: ['https://www.aipropertywriter.com/og-image.png'],
+    title: 'AI Property Writer – 3 Variations + Social Posts + Market Data',
+    description: 'The only AI platform with 3 listing variations, Instagram/Facebook posts, and market intelligence. Save 10+ hours per week.',
+    images: ['https://www.aipropertywriter.com/og-image.svg'],
     creator: '@aipropertywriter',
     site: '@aipropertywriter',
   },

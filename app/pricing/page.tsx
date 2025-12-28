@@ -9,6 +9,8 @@ import { getErrorMessage } from '@/lib/utils'
 import { Check, Crown, Zap, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Footer } from '@/components/footer'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 
 interface User {
   id: string
@@ -299,6 +301,11 @@ export default function PricingPage() {
         </div>
       </header>
 
+      {/* Breadcrumbs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <Breadcrumbs items={[{ label: 'Pricing' }]} />
+      </div>
+
       {/* Hero Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -447,6 +454,9 @@ export default function PricingPage() {
           )}
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
     </>
   )
