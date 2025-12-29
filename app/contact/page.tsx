@@ -38,7 +38,8 @@ export default function ContactPage() {
       areaServed: 'US'
     },
     sameAs: [
-      'https://www.facebook.com/profile.php?id=61585644513349'
+      'https://www.facebook.com/profile.php?id=61585644513349',
+      'https://x.com/writerai20789'
     ]
   }
 
