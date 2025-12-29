@@ -29,7 +29,7 @@ export default function AboutPage() {
     '@type': 'Organization',
     name: 'AI Property Writer',
     url: 'https://www.aipropertywriter.com',
-    logo: 'https://www.aipropertywriter.com/logo.svg',
+    logo: 'https://www.aipropertywriter.com/logo.png',
     description: 'The most advanced AI listing platform for real estate. Generate 3 listing variations, Instagram/Facebook posts, and market-powered copy in seconds.',
     sameAs: [
       'https://www.facebook.com/profile.php?id=61585644513349'
@@ -52,7 +52,7 @@ export default function AboutPage() {
         <header className="px-4 lg:px-6 h-14 flex items-center border-b">
           <Link className="flex items-center justify-center" href="/">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="AI Property Writer"
               width={32}
               height={32}

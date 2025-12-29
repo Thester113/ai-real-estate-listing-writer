@@ -190,7 +190,7 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="AI Property Writer"
                   width={32}
                   height={32}

@@ -28,7 +28,7 @@ export default function ContactPage() {
     '@type': 'Organization',
     name: 'AI Property Writer',
     url: 'https://www.aipropertywriter.com',
-    logo: 'https://www.aipropertywriter.com/logo.svg',
+    logo: 'https://www.aipropertywriter.com/logo.png',
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'support@aipropertywriter.com',
@@ -57,7 +57,7 @@ export default function ContactPage() {
         <header className="px-4 lg:px-6 h-14 flex items-center border-b">
           <Link className="flex items-center justify-center" href="/">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="AI Property Writer"
               width={32}
               height={32}
