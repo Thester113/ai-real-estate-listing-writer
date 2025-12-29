@@ -27,11 +27,13 @@ export function EmailCapture({
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const [deliveryMethod, setDeliveryMethod] = useState<'kit_email' | 'direct_download' | null>(null)
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email || !email.includes('@')) {
       toast({
         title: 'Invalid email',
@@ -62,10 +64,35 @@ export function EmailCapture({
       }
 
       setIsSubscribed(true)
-      toast({
-        title: 'Successfully subscribed!',
-        description: 'Check your email for your first tip.',
-      })
+
+      // Handle different delivery methods
+      if (result.deliveryMethod === 'kit_email') {
+        // Kit will send the PDF via incentive email
+        setDeliveryMethod('kit_email')
+        toast({
+          title: 'Check your inbox!',
+          description: 'Your download link is on its way to your email.',
+        })
+      } else if (result.downloadUrl) {
+        setDeliveryMethod('direct_download')
+        // Direct download
+        setDownloadUrl(result.downloadUrl)
+
+        // Auto-trigger download after a short delay
+        setTimeout(() => {
+          window.location.href = result.downloadUrl
+        }, 500)
+
+        toast({
+          title: 'Successfully subscribed!',
+          description: 'Your download will start automatically.',
+        })
+      } else {
+        toast({
+          title: 'Successfully subscribed!',
+          description: 'Check your email for your first tip.',
+        })
+      }
     } catch (error) {
       console.error('Email capture error:', error)
       toast({
@@ -83,7 +110,28 @@ export function EmailCapture({
       <div className={`text-center p-6 bg-green-50 border border-green-200 rounded-lg ${className}`}>
         <div className="text-4xl mb-2">✅</div>
         <h3 className="text-lg font-semibold text-green-800 mb-1">You're subscribed!</h3>
-        <p className="text-green-700 text-sm">Check your email for your first real estate tip.</p>
+        {deliveryMethod === 'kit_email' ? (
+          <>
+            <p className="text-green-700 text-sm mb-2">Check your inbox for your download link.</p>
+            <p className="text-green-600 text-xs">Don't see it? Check your spam folder.</p>
+          </>
+        ) : downloadUrl ? (
+          <>
+            <p className="text-green-700 text-sm mb-4">Your download will start automatically.</p>
+            <a
+              href={downloadUrl}
+              download
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download Now
+            </a>
+          </>
+        ) : (
+          <p className="text-green-700 text-sm">Check your email for your first real estate tip.</p>
+        )}
       </div>
     )
   }

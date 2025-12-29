@@ -96,22 +96,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="/api/docs"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <span className="text-muted-foreground flex items-center gap-2 opacity-60">
                   API Documentation
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/yourusername/ai-property-writer"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  GitHub
-                </a>
+                  <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">
+                    Coming Soon
+                  </span>
+                </span>
               </li>
             </ul>
           </div>
@@ -141,14 +131,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="https://status.aipropertywriter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <span className="text-muted-foreground flex items-center gap-2 opacity-60">
                   System Status
-                </a>
+                  <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">
+                    Coming Soon
+                  </span>
+                </span>
               </li>
             </ul>
           </div>

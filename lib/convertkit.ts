@@ -9,6 +9,7 @@ export interface ConvertKitSubscriber {
   firstName?: string
   tags?: string[]
   customFields?: Record<string, string>
+  formId?: string // Optional: use a specific form (for lead magnet incentive delivery)
 }
 
 export interface ConvertKitResponse {
@@ -30,17 +31,21 @@ export async function subscribeToConvertKit({
   email,
   firstName,
   tags = [],
-  customFields = {}
+  customFields = {},
+  formId
 }: ConvertKitSubscriber): Promise<ConvertKitResponse> {
-  if (!CONVERTKIT_API_KEY || !CONVERTKIT_FORM_ID) {
+  // Use provided formId or fall back to default
+  const targetFormId = formId || CONVERTKIT_FORM_ID
+
+  if (!CONVERTKIT_API_KEY || !targetFormId) {
     console.error('ConvertKit: Missing API key or form ID')
     return { success: false, error: 'ConvertKit not configured' }
   }
 
   try {
-    console.log('📧 ConvertKit: Subscribing email:', email)
-    
-    const response = await fetch(`${CONVERTKIT_API_URL}/forms/${CONVERTKIT_FORM_ID}/subscribe`, {
+    console.log('📧 ConvertKit: Subscribing email:', email, 'to form:', targetFormId)
+
+    const response = await fetch(`${CONVERTKIT_API_URL}/forms/${targetFormId}/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
