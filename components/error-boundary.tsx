@@ -118,10 +118,10 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 If this problem persists, please contact our support team at{' '}
                 <a 
-                  href="mailto:support@airealestatelistings.com" 
+                  href="mailto:support@aipropertywriter.com" 
                   className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  support@airealestatelistings.com
+                  support@aipropertywriter.com
                 </a>
               </p>
             </div>

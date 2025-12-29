@@ -127,7 +127,7 @@ export default function TermsPage() {
               If you have any questions about these Terms, please contact us at:
             </p>
             <div className="bg-secondary/50 rounded-lg p-4">
-              <p><strong>Email:</strong> support@airealestatelistings.com</p>
+              <p><strong>Email:</strong> support@aipropertywriter.com</p>
               <p><strong>Address:</strong> AI Real Estate Listing Writer, 123 Innovation Drive, San Francisco, CA 94105</p>
             </div>
           </div>

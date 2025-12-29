@@ -70,7 +70,7 @@ export default function AdminPage() {
       }
 
       // Check if user has admin role or is specific admin email
-      const adminEmails = ['tom@hester.com', 'admin@airealestatelistings.com']
+      const adminEmails = ['tom@hester.com', 'admin@aipropertywriter.com']
       const isAdmin = adminEmails.includes(session.user.email || '')
 
       if (!isAdmin) {
