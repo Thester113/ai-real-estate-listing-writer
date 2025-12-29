@@ -174,7 +174,7 @@ export default function PrivacyPage() {
             </p>
             <div className="bg-secondary/50 rounded-lg p-4">
               <p><strong>Email:</strong> support@aipropertywriter.com</p>
-              <p><strong>Address:</strong> AI Real Estate Listing Writer, 123 Innovation Drive, San Francisco, CA 94105</p>
+              <p><strong>Address:</strong> AI Property Writer, Eagle Mountain, Utah</p>
             </div>
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">13. State-Specific Rights</h2>
