@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createHash, timingSafeEqual } from 'crypto';
+import { validateStripeConfig } from './stripe-config';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -179,16 +180,13 @@ export function validateEnvironment() {
     'SUPABASE_SERVICE_ROLE_KEY',
     'STRIPE_SECRET_KEY',
   ];
-  
-  // Use stripe config validation instead of hardcoded webhook secret
-  const { validateStripeConfig } = require('./stripe-config');
-  
+
   const missing = required.filter(key => !process.env[key]);
-  
+
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
-  
+
   // Validate Stripe configuration (includes webhook secret)
   try {
     validateStripeConfig();

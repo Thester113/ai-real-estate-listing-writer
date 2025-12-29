@@ -45,11 +45,10 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npx next lint --max-warnings 0 || echo "⚠️  Linting completed with warnings"
-        continue-on-error: true
+        run: npm run lint:check
 
-  health-check:
-    name: Health Check
+  test:
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -65,15 +64,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify package.json
-        run: |
-          echo "✅ Package.json is valid"
-          node -e "console.log('✅ Node.js is working')"
-          npm --version
-          echo "✅ npm is working"
+      - name: Run tests with coverage
+        run: npm run test:ci
+        env:
+          CI: true
+          NODE_ENV: test
 
-      - name: Check project structure
-        run: |
-          echo "✅ Checking project structure..."
-          ls -la app/
-          echo "✅ Project structure looks good"
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # This job runs after all checks pass
+  checks-complete:
+    name: All Checks Complete
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint, test]
+
+    steps:
+      - name: All checks passed
+        run: echo "All CI checks passed successfully"
