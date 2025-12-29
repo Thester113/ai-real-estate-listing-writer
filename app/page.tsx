@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, Zap, Users, Star } from 'lucide-react'
 import { EmailCapture } from '@/components/email-capture'
 import { Footer } from '@/components/footer'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function HomePage() {
   // Structured data for SEO
@@ -76,7 +77,7 @@ export default function HomePage() {
           />
           <span className="ml-2 font-bold text-lg">AI Property Writer</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex items-center gap-4 sm:gap-6">
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">
             Pricing
           </Link>
@@ -86,6 +87,7 @@ export default function HomePage() {
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="/auth">
             Sign In
           </Link>
+          <ThemeToggle />
         </nav>
       </header>
 

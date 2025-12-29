@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Mail, MessageSquare, Clock } from 'lucide-react'
 import { ContactForm } from '@/components/contact-form'
+import { ThemeToggle } from '@/components/theme-toggle'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -65,7 +66,7 @@ export default function ContactPage() {
             />
             <span className="ml-2 font-bold text-lg">AI Property Writer</span>
           </Link>
-          <nav className="ml-auto flex gap-4 sm:gap-6">
+          <nav className="ml-auto flex items-center gap-4 sm:gap-6">
             <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">
               Pricing
             </Link>
@@ -75,6 +76,7 @@ export default function ContactPage() {
             <Link className="text-sm font-medium hover:underline underline-offset-4" href="/auth">
               Sign In
             </Link>
+            <ThemeToggle />
           </nav>
         </header>
 

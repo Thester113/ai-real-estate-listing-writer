@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
 import { Plus, FileText, TrendingUp, Crown, Zap, Upload, BarChart3, Palette, Target, Settings } from 'lucide-react'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface Profile {
   id: string
@@ -215,6 +216,8 @@ export default function Dashboard() {
               <span className="text-sm text-muted-foreground">
                 Welcome back, {profile.full_name}!
               </span>
+
+              <ThemeToggle />
 
               {/* Settings Dropdown */}
               <DropdownMenu>

@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { AuthProvider } from '@/components/auth-provider'
 import { cn } from '@/lib/utils'
 import MaintenanceCheck from '@/components/maintenance-check'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -88,9 +89,16 @@ export default function RootLayout({
       )}>
         <ErrorBoundary>
           <AuthProvider>
-            <MaintenanceCheck>
-              {children}
-            </MaintenanceCheck>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <MaintenanceCheck>
+                {children}
+              </MaintenanceCheck>
+            </ThemeProvider>
           </AuthProvider>
         </ErrorBoundary>
         <Analytics />

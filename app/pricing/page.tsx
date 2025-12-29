@@ -11,6 +11,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Footer } from '@/components/footer'
 import { Breadcrumbs } from '@/components/breadcrumbs'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface User {
   id: string
@@ -279,6 +280,7 @@ export default function PricingPage() {
               <span className="text-xl font-bold">AI Property Writer</span>
             </Link>
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               {user ? (
                 <Button asChild variant="outline">
                   <Link href="/dashboard">

@@ -112,3 +112,5 @@ jspm_packages/
 /playwright/.cache/
 node_modules
 .env*.local
+.env.vercel
+.env.vercel.production

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Footer } from '@/components/footer'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { CheckCircle, XCircle, Loader2, Server, Database, CreditCard, Bot } from 'lucide-react'
 
 type HealthStatus = {
@@ -67,7 +68,7 @@ export default function StatusPage() {
           />
           <span className="ml-2 font-bold text-lg">AI Property Writer</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex items-center gap-4 sm:gap-6">
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="/pricing">
             Pricing
           </Link>
@@ -77,6 +78,7 @@ export default function StatusPage() {
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="/auth">
             Sign In
           </Link>
+          <ThemeToggle />
         </nav>
       </header>
 
