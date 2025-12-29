@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, FileText, Image, Palette, Settings } from 'lucide-react'
+import { Download, FileText, Image as ImageIcon, Palette, Settings } from 'lucide-react'
 
 interface ListingResult {
   title: string
@@ -255,7 +255,7 @@ ${branding.agentName ? `**Agent:** ${branding.agentName}  \n` : ''}${branding.ag
         {userPlan === 'pro' && (
           <>
             <Button onClick={exportAsHTML} variant="outline" size="sm">
-              <Image className="h-4 w-4 mr-2" />
+              <ImageIcon className="h-4 w-4 mr-2" />
               Export as HTML
             </Button>
             
@@ -363,7 +363,7 @@ ${branding.agentName ? `**Agent:** ${branding.agentName}  \n` : ''}${branding.ag
             </Button>
             
             <Button onClick={exportAsHTML} variant="outline" size="sm">
-              <Image className="h-4 w-4 mr-2" />
+              <ImageIcon className="h-4 w-4 mr-2" />
               Export Branded HTML
             </Button>
           </div>

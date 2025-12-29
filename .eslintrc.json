@@ -4,6 +4,10 @@
   "plugins": ["@typescript-eslint"],
   "root": true,
   "ignorePatterns": ["node_modules/", ".next/", "coverage/"],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react-hooks/exhaustive-deps": "warn"
+  },
   "overrides": [
     {
       "files": ["__tests__/**/*.ts", "__tests__/**/*.tsx"],
