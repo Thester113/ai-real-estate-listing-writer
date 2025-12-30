@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { supabaseAdmin } from '@/lib/supabase-client'
+import { supabase } from '@/lib/supabase-client'
 import { EmailCapture } from '@/components/email-capture'
 import { ArrowLeft, Calendar, Clock, User, Tag } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
@@ -28,18 +28,24 @@ interface BlogPost {
 }
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const { data, error } = await (supabaseAdmin as any)
-    .from('blog_posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('published', true)
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('published', true)
+      .single()
 
-  if (error || !data) {
+    if (error) {
+      console.error('Error fetching blog post:', error.message)
+      return null
+    }
+
+    return data as BlogPost
+  } catch (error) {
+    console.error('Unexpected error fetching blog post:', error)
     return null
   }
-
-  return data as BlogPost
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -89,14 +95,24 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export async function generateStaticParams() {
-  const { data: posts } = await (supabaseAdmin as any)
-    .from('blog_posts')
-    .select('slug')
-    .eq('published', true)
+  try {
+    const { data: posts, error } = await supabase
+      .from('blog_posts')
+      .select('slug')
+      .eq('published', true)
 
-  return posts?.map((post: any) => ({
-    slug: post.slug,
-  })) || []
+    if (error) {
+      console.error('Error fetching blog slugs for static params:', error.message)
+      return []
+    }
+
+    return posts?.map((post: { slug: string }) => ({
+      slug: post.slug,
+    })) || []
+  } catch (error) {
+    console.error('Unexpected error in generateStaticParams:', error)
+    return []
+  }
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
