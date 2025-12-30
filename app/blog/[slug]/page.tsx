@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
+import { getBlogImage } from '@/lib/blog-images'
 import { EmailCapture } from '@/components/email-capture'
 import { ArrowLeft, Calendar, Clock, User, Tag } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
@@ -14,6 +15,7 @@ interface BlogPost {
   slug: string
   content: string
   excerpt: string
+  featured_image?: string
   published: boolean
   created_at: string
   updated_at: string
@@ -124,13 +126,16 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'
 
+  // Get the blog image for this post
+  const blogImage = getBlogImage(post.metadata?.category, post.featured_image)
+
   // Prepare structured data for Article schema
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: `${baseUrl}/og-image.png`,
+    image: blogImage,
     datePublished: post.created_at,
     dateModified: post.updated_at,
     author: {
@@ -176,8 +181,18 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           </div>
         </header>
 
+        {/* Hero Image */}
+        <div className="w-full h-64 md:h-96 relative">
+          <img
+            src={blogImage}
+            alt={post.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+        </div>
+
         {/* Article */}
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-16 relative z-10">
           {/* Breadcrumbs */}
           <nav className="text-sm text-muted-foreground mb-6">
             <Link href="/" className="hover:text-primary">Home</Link>

@@ -7,6 +7,7 @@ import NewsletterForm from '@/components/newsletter-form'
 import { ArrowLeft, Calendar, Clock, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase-client'
 import { formatDate } from '@/lib/utils'
+import { getBlogImage } from '@/lib/blog-images'
 
 interface BlogPost {
   id: string
@@ -152,9 +153,11 @@ export default function BlogPage() {
               <div className="bg-card border rounded-lg shadow-lg overflow-hidden">
                 <div className="md:flex">
                   <div className="md:w-1/2">
-                    <div className="h-64 md:h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      <div className="text-6xl text-primary/40">📝</div>
-                    </div>
+                    <img
+                      src={getBlogImage(displayedPosts[0].metadata?.category)}
+                      alt={displayedPosts[0].title}
+                      className="h-64 md:h-full w-full object-cover"
+                    />
                   </div>
                   <div className="md:w-1/2 p-8">
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-3">
@@ -218,9 +221,11 @@ export default function BlogPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {displayedPosts.slice(1).map((post) => (
               <article key={post.id} className="bg-card border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className="h-48 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                  <div className="text-4xl text-primary/40">📄</div>
-                </div>
+                <img
+                  src={getBlogImage(post.metadata?.category)}
+                  alt={post.title}
+                  className="h-48 w-full object-cover"
+                />
                 <div className="p-6">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-3">
                     <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs">
