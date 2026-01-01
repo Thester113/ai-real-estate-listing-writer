@@ -374,7 +374,7 @@ export default function AnalyticsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-sm mb-1">
-                          {listing.title || 'Untitled Listing'}
+                          {(listing as any).result?.title || listing.title || 'Untitled Listing'}
                         </h4>
                         <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                           <span>{listing.word_count} words</span>
