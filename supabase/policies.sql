@@ -5,6 +5,7 @@ ALTER TABLE public.generations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.email_subscribers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.market_analysis_cache ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -33,9 +34,22 @@ CREATE POLICY "Users can view own generations" ON public.generations
 CREATE POLICY "Users can insert own generations" ON public.generations
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Blog posts policies (public read, admin write)
+CREATE POLICY "Users can delete own generations" ON public.generations
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Blog posts policies (public read, service role write)
 CREATE POLICY "Anyone can view published blog posts" ON public.blog_posts
   FOR SELECT USING (published = true);
+
+CREATE POLICY "Service role manages blog posts" ON public.blog_posts
+  FOR ALL USING (auth.role() = 'service_role');
+
+-- Market analysis cache policies (public read, service role write)
+CREATE POLICY "Allow public read of market cache" ON public.market_analysis_cache
+  FOR SELECT USING (true);
+
+CREATE POLICY "Service role manages market cache" ON public.market_analysis_cache
+  FOR ALL USING (auth.role() = 'service_role');
 
 -- Email subscribers policies (insert only for new subscriptions)
 CREATE POLICY "Anyone can subscribe to emails" ON public.email_subscribers
