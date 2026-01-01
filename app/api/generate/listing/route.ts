@@ -25,6 +25,8 @@ interface ListingFormData {
   wordCount?: string
   includeKeywords?: boolean
   customKeywords?: string
+  // Meta compliance (available to all users)
+  metaFriendly?: boolean
 }
 
 interface ListingResult {
@@ -109,6 +111,82 @@ CRITICAL INSTRUCTION: Weave this market data naturally into your listing copy. D
 Make the data feel like insider knowledge, not a statistics report.`
 }
 
+/**
+ * Build Meta Fair Housing compliance instructions for OpenAI prompt
+ * Available to ALL users - not a Pro feature
+ * @param enabled Whether Meta-friendly mode is enabled
+ * @param targetAudience The selected target audience (may need adjustment)
+ * @returns Formatted compliance section for prompt and adjusted target audience
+ */
+function buildMetaCompliancePrompt(enabled: boolean, targetAudience: string): {
+  complianceInstructions: string
+  adjustedTargetAudience: string
+} {
+  if (!enabled) {
+    return {
+      complianceInstructions: '',
+      adjustedTargetAudience: targetAudience
+    }
+  }
+
+  // Map potentially problematic target audiences to neutral alternatives
+  const audienceMapping: Record<string, string> = {
+    'Growing families': 'Buyers seeking spacious living',
+    'Families': 'Buyers seeking spacious living',
+    'Empty nesters': 'Buyers seeking comfortable living',
+    'Retirees': 'Buyers seeking comfortable living',
+    'Young professionals': 'Career-focused buyers',
+    'First-time homebuyers': 'First-time buyers',
+    'First-time buyers': 'First-time buyers',
+    'Luxury buyers': 'Discerning buyers',
+    'Budget-conscious buyers': 'Value-focused buyers',
+    'Investors': 'Investment-minded buyers'
+  }
+
+  const adjustedAudience = audienceMapping[targetAudience] || 'General buyers'
+
+  const complianceInstructions = `
+
+META FAIR HOUSING COMPLIANCE (CRITICAL - THIS IS MANDATORY):
+This listing will be used for Meta (Facebook/Instagram) advertising and MUST strictly comply with Fair Housing Act requirements.
+
+PROHIBITED LANGUAGE - NEVER USE THESE:
+- Demographic-targeting terms: "perfect for families", "ideal for couples", "great for singles", "young professionals welcome"
+- Familial status references: "family-friendly", "no kids", "adult community", "great schools nearby", "walking distance to schools", "safe for children"
+- Religious proximity: "near churches", "close to synagogues", "temple nearby", "near mosque"
+- Exclusivity/exclusionary terms: "exclusive", "private community", "gated for security", "quiet neighborhood" (implies exclusion)
+- Age-related terms: "55+", "retirees welcome", "young and vibrant area", "mature residents", "active adult"
+- Disability-related: "able-bodied", "no wheelchair needed", "stairs throughout"
+- Origin/ethnicity hints: "ethnic neighborhood", "diverse community" when implying demographics
+
+REQUIRED APPROACH - FOLLOW EXACTLY:
+1. Focus ONLY on physical property features: bedrooms, bathrooms, square footage, amenities, upgrades, finishes
+2. Describe architectural style, layout, appliances, fixtures, outdoor space
+3. Mention location neutrally: city/neighborhood name only, proximity to highways, downtown, parks (NOT schools, religious institutions)
+4. Use inclusive, neutral language: "spacious", "well-appointed", "updated", "conveniently located", "move-in ready"
+5. Highlight property benefits: natural light, storage, parking, lot size, views
+6. All calls-to-action must be neutral: "Schedule a tour", "See this home today", "Contact for details"
+
+GOOD EXAMPLES:
+- "Spacious 3-bedroom home with updated kitchen and large backyard"
+- "Conveniently located near downtown with easy highway access"
+- "Open floor plan with abundant natural light and modern finishes"
+- "Well-maintained home featuring hardwood floors and stainless appliances"
+
+BAD EXAMPLES (NEVER USE):
+- "Perfect for growing families with nearby top-rated schools" (familial status)
+- "Quiet, exclusive neighborhood ideal for professionals" (exclusionary + demographic)
+- "Close to places of worship and community centers" (religious)
+- "Great starter home for young couples" (age + familial)
+
+The target audience for tone/style purposes is "${adjustedAudience}" but DO NOT mention any audience characteristics in the copy itself.`
+
+  return {
+    complianceInstructions,
+    adjustedTargetAudience: adjustedAudience
+  }
+}
+
 async function generatePropertyListing(
   formData: ListingFormData,
   marketData?: any | null
@@ -127,8 +205,18 @@ async function generatePropertyListing(
     tone,
     wordCount,
     includeKeywords,
-    customKeywords
+    customKeywords,
+    metaFriendly
   } = formData
+
+  // Build Meta compliance instructions (available to all users)
+  const { complianceInstructions, adjustedTargetAudience } = buildMetaCompliancePrompt(
+    metaFriendly || false,
+    targetAudience
+  )
+
+  // Use adjusted target audience if Meta-friendly is enabled
+  const effectiveTargetAudience = metaFriendly ? adjustedTargetAudience : targetAudience
 
   // Apply defaults AFTER destructuring so we can see what was sent
   const finalListingStyle = listingStyle || 'standard'
@@ -222,7 +310,8 @@ async function generatePropertyListing(
     wordCountRange,
     maxTokens,
     hasKeywords: !!keywordsInstruction,
-    hasMarketData: !!marketData
+    hasMarketData: !!marketData,
+    metaFriendly: !!metaFriendly
   })
 
   const prompt = `You are a professional real estate copywriter. Create a compelling property listing for the following property:
@@ -234,9 +323,9 @@ Property Details:
 - Size: ${squareFeetText}
 - Location: ${location}
 - Price Range: ${priceText}
-- Target Audience: ${targetAudience}
+- Target Audience: ${effectiveTargetAudience}
 - Features: ${featuresText}
-- Additional Details: ${additionalDetails || 'None provided'}${marketIntelligencePrompt}
+- Additional Details: ${additionalDetails || 'None provided'}${marketIntelligencePrompt}${complianceInstructions}
 
 STYLE: ${styleInstructions}
 TONE: ${toneInstructions}
@@ -319,10 +408,18 @@ General Guidelines:
 - WORD COUNT: Each description MUST be ${wordCountRange}. Non-negotiable.
 - Make each version MEANINGFULLY DIFFERENT - not just minor word swaps
 - Apply base style (${styleInstructions}) within each variation's approach
-- All variations target ${targetAudience} but with different angles
+- All variations target ${effectiveTargetAudience} but with different angles
 - Be specific to this property and location
 - Each variation should be independently excellent
-
+${metaFriendly ? `
+SOCIAL MEDIA COMPLIANCE (CRITICAL):
+The Instagram and Facebook posts MUST follow the same Fair Housing compliance rules as the listing:
+- NO demographic targeting language (no "perfect for families", "great for couples", etc.)
+- Focus ONLY on property features and benefits
+- Use neutral, inclusive language
+- NO references to family status, religion, age, or protected classes
+- Neutral CTAs only ("See this home", "Schedule a tour")
+` : ''}
 Social Media Requirements:
 
 INSTAGRAM POST:
@@ -802,7 +899,8 @@ export async function POST(request: NextRequest) {
                 wordCount: body.wordCount || 'standard',
                 keywords: body.includeKeywords || false,
                 marketDataInjected: !!marketData,
-                zipCode: zipCode || null
+                zipCode: zipCode || null,
+                metaFriendly: body.metaFriendly || false
               },
               marketContext: marketData ? {
                 zipCode,
@@ -855,6 +953,7 @@ export async function POST(request: NextRequest) {
         monthlyLimit: monthlyLimit,
         currentUsage: currentUsage + 1,
         plan: userPlan,
+        metaFriendly: body.metaFriendly || false,
         marketContext: marketData ? {
           zipCode,
           medianPrice: marketData.medianPrice,

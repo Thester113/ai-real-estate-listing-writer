@@ -150,6 +150,7 @@ export default function GeneratePage() {
   const [wordCount, setWordCount] = useState('standard')
   const [includeKeywords, setIncludeKeywords] = useState(false)
   const [customKeywords, setCustomKeywords] = useState('')
+  const [metaFriendly, setMetaFriendly] = useState(false)
   const [formData, setFormData] = useState<ListingFormData>({
     propertyType: '',
     bedrooms: 3,
@@ -222,6 +223,8 @@ export default function GeneratePage() {
       // Prepare the form data with Pro features
       const submissionData = {
         ...formData,
+        // Meta-friendly mode is available to all users
+        metaFriendly,
         // Include Pro features if user has Pro plan
         ...(userPlan === 'pro' && {
           listingStyle,
@@ -513,6 +516,55 @@ export default function GeneratePage() {
                   </select>
                 </div>
 
+                {/* Meta-Friendly Mode Toggle - Available to ALL users */}
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <input
+                          type="checkbox"
+                          id="metaFriendly"
+                          checked={metaFriendly}
+                          onChange={(e) => setMetaFriendly(e.target.checked)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="metaFriendly" className="font-medium text-sm text-blue-900 dark:text-blue-100">
+                          Meta-Friendly Mode
+                        </label>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                          For Ads
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 ml-6">
+                        Generates Fair Housing-compliant copy for Facebook & Instagram ads.
+                        Avoids discriminatory language and focuses on property features only.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toast({
+                          title: 'About Meta-Friendly Mode',
+                          description: 'Meta (Facebook/Instagram) requires real estate ads to comply with Fair Housing policies. This mode avoids terms that could suggest preference based on race, religion, familial status, or other protected classes.',
+                        })
+                      }}
+                      className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex-shrink-0"
+                    >
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Warning when conflicting audience is selected */}
+                  {metaFriendly && ['Growing families', 'Empty nesters', 'Retirees', 'Young professionals'].includes(formData.targetAudience) && (
+                    <div className="mt-3 p-2 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded text-xs text-amber-800 dark:text-amber-200">
+                      <strong>Note:</strong> With Meta-Friendly mode, your listing will use neutral language
+                      instead of targeting &quot;{formData.targetAudience}&quot; to comply with Fair Housing policies.
+                    </div>
+                  )}
+                </div>
+
                 {/* Price Range */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -746,11 +798,16 @@ export default function GeneratePage() {
             {result ? (
               <div className="bg-card border rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <h2 className="text-lg font-semibold">Generated Listing</h2>
                     {resultMeta?.marketContext?.dataInjected && (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         📊 Enhanced with Market Data
+                      </span>
+                    )}
+                    {resultMeta?.metaFriendly && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        ✓ Meta-Friendly
                       </span>
                     )}
                   </div>
