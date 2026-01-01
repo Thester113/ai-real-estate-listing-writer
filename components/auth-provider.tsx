@@ -46,17 +46,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change:', event, session?.user?.email)
-      
+
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
 
-      if (event === 'SIGNED_IN' && session) {
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        // User clicked password reset link - redirect to reset password page
+        router.push('/auth/reset-password')
+      } else if (event === 'SIGNED_IN' && session) {
         // User successfully signed in (including after email confirmation)
         const currentPath = window.location.pathname
-        
+
         // If user is on auth page and just signed in, redirect to dashboard
-        if (currentPath === '/auth' || currentPath.startsWith('/auth/')) {
+        // But NOT if they're on reset-password page (they're resetting their password)
+        if (currentPath === '/auth' || (currentPath.startsWith('/auth/') && currentPath !== '/auth/reset-password')) {
           toast({
             title: 'Welcome back!',
             description: 'You have been signed in successfully.',
