@@ -13,7 +13,7 @@ import {
 import { supabase, getProfile, getUserUsage } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
-import { Plus, FileText, TrendingUp, Crown, Zap, Upload, BarChart3, Palette, Target, Settings } from 'lucide-react'
+import { Plus, FileText, TrendingUp, Crown, Zap, Upload, BarChart3, Palette, Target, Settings, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -256,6 +256,62 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Banner for New Users */}
+        {generations.length === 0 && (
+          <div className="mb-8 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border border-primary/20 rounded-xl p-8">
+            <div className="flex items-start gap-6">
+              <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <Sparkles className="h-8 w-8 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-2">Welcome to AI PropertyWriter!</h2>
+                <p className="text-muted-foreground mb-6 max-w-2xl">
+                  You're all set up and ready to create professional real estate listings in seconds.
+                  Here's how to get started:
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="flex items-start gap-3 bg-background/60 rounded-lg p-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">1</div>
+                    <div>
+                      <h3 className="font-semibold text-sm">Enter property details</h3>
+                      <p className="text-xs text-muted-foreground">Bedrooms, location, features</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-background/60 rounded-lg p-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">2</div>
+                    <div>
+                      <h3 className="font-semibold text-sm">AI generates your listing</h3>
+                      <p className="text-xs text-muted-foreground">3 unique variations instantly</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-background/60 rounded-lg p-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">3</div>
+                    <div>
+                      <h3 className="font-semibold text-sm">Copy and use anywhere</h3>
+                      <p className="text-xs text-muted-foreground">MLS, Zillow, social media</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button asChild size="lg" className="gap-2">
+                    <Link href="/generate">
+                      <Plus className="h-5 w-5" />
+                      Create Your First Listing
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>20 free listings included</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Usage Card */}
