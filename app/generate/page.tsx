@@ -399,7 +399,7 @@ export default function GeneratePage() {
                 <h2 className="text-lg font-semibold">Property Details</h2>
                 {userPlan === 'starter' && (
                   <Link
-                    href="/dashboard?upgrade=true"
+                    href="/pricing"
                     className="text-xs bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1.5 rounded-full hover:shadow-lg transition-all"
                   >
                     ✨ Upgrade to Pro for Advanced Features

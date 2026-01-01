@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
       const userPlanValue = (profile as any)?.plan || 'starter'
       
       if (userPlanValue !== 'pro') {
-        router.push('/dashboard?upgrade=true')
+        router.push('/pricing')
         return
       }
       
