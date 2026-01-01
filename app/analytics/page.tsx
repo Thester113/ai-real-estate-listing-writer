@@ -328,9 +328,9 @@ export default function AnalyticsPage() {
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
                           <div className="w-20 bg-secondary rounded-full h-2">
-                            <div 
+                            <div
                               className="bg-primary h-2 rounded-full"
-                              style={{ width: `${(day.listings / Math.max(...analytics.dailyUsage.map(d => d.listings))) * 100}%` }}
+                              style={{ width: `${Math.max(...analytics.dailyUsage.map(d => d.listings), 1) > 0 ? (day.listings / Math.max(...analytics.dailyUsage.map(d => d.listings), 1)) * 100 : 0}%` }}
                             ></div>
                           </div>
                           <span className="text-sm font-medium">{day.listings}</span>
@@ -350,9 +350,9 @@ export default function AnalyticsPage() {
                       <span className="text-sm">{type.type}</span>
                       <div className="flex items-center space-x-2">
                         <div className="w-20 bg-secondary rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-primary h-2 rounded-full"
-                            style={{ width: `${(type.count / Math.max(...analytics.topPropertyTypes.map(t => t.count))) * 100}%` }}
+                            style={{ width: `${Math.max(...analytics.topPropertyTypes.map(t => t.count), 1) > 0 ? (type.count / Math.max(...analytics.topPropertyTypes.map(t => t.count), 1)) * 100 : 0}%` }}
                           ></div>
                         </div>
                         <span className="text-sm font-medium">{type.count}</span>
@@ -386,7 +386,9 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-medium">
-                          {Math.round((listing.word_count / analytics.averageWordsPerListing - 1) * 100)}%
+                          {analytics.averageWordsPerListing > 0
+                            ? `${Math.round((listing.word_count / analytics.averageWordsPerListing - 1) * 100)}%`
+                            : '—'}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           vs avg

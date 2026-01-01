@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
-import { ArrowLeft, FileText, Copy, Download, Eye } from 'lucide-react'
+import { ArrowLeft, FileText, Copy, Download, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+
+const PAGE_SIZE = 20
 
 interface Generation {
   id: string
@@ -18,43 +20,67 @@ interface Generation {
     highlights: string[]
     marketingPoints: string[]
     callToAction: string
-  }
+  } | null
   word_count: number
   metadata: {
     model: string
     tokens_used: number
     plan: string
-  }
+  } | null
 }
 
 export default function HistoryPage() {
   const [generations, setGenerations] = useState<Generation[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedGeneration, setSelectedGeneration] = useState<Generation | null>(null)
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [total, setTotal] = useState(0)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
 
   useEffect(() => {
     loadGenerations()
-  }, [])
+  }, [page])
 
   const loadGenerations = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session) {
         router.push('/auth?redirect=/history')
         return
       }
 
+      // Get total count
+      const { count } = await supabase
+        .from('generations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+
+      setTotal(count || 0)
+      setHasMore((count || 0) > (page + 1) * PAGE_SIZE)
+
+      // Fetch paginated data
       const { data: generationsData, error } = await supabase
         .from('generations')
         .select('*')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
       if (error) throw error
-      setGenerations(generationsData || [])
+      setGenerations((generationsData as Generation[]) || [])
+
+      // Check for URL parameter to pre-select a generation
+      const selectedId = searchParams.get('id')
+      if (selectedId && generationsData) {
+        const found = (generationsData as Generation[]).find(g => g.id === selectedId)
+        if (found) {
+          setSelectedGeneration(found)
+        }
+      }
 
     } catch (error) {
       console.error('History error:', error)
@@ -86,17 +112,26 @@ export default function HistoryPage() {
 
   const exportAsText = (generation: Generation) => {
     const result = generation.result
-    const text = `${result.title}
+    if (!result) {
+      toast({
+        title: 'Export failed',
+        description: 'No listing data available to export',
+        variant: 'destructive'
+      })
+      return
+    }
 
-${result.description}
+    const text = `${result.title || 'Untitled Listing'}
+
+${result.description || 'No description'}
 
 Key Features:
-${result.highlights.map(h => `• ${h}`).join('\n')}
+${(result.highlights || []).map(h => `• ${h}`).join('\n')}
 
 Marketing Points:
-${result.marketingPoints.map(p => `• ${p}`).join('\n')}
+${(result.marketingPoints || []).map(p => `• ${p}`).join('\n')}
 
-${result.callToAction}`
+${result.callToAction || ''}`
 
     const blob = new Blob([text], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -150,7 +185,7 @@ ${result.callToAction}`
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-medium text-lg line-clamp-2">
-                      {generation.result.title}
+                      {generation.result?.title || 'Untitled Listing'}
                     </h3>
                     <Button
                       variant="ghost"
@@ -164,18 +199,46 @@ ${result.callToAction}`
                     </Button>
                   </div>
                   <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
-                    {generation.result.description}
+                    {generation.result?.description || 'No description available'}
                   </p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center space-x-4">
-                      <span>{generation.word_count} words</span>
+                      <span>{generation.word_count || 0} words</span>
                       <span>•</span>
-                      <span className="capitalize">{generation.metadata.plan} plan</span>
+                      <span className="capitalize">{generation.metadata?.plan || 'starter'} plan</span>
                     </div>
                     <span>{new Date(generation.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
               ))}
+
+              {/* Pagination */}
+              {total > PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <span className="text-sm text-muted-foreground">
+                    Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm">Page {page + 1}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={!hasMore}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Detail View */}
@@ -188,7 +251,8 @@ ${result.callToAction}`
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => copyToClipboard(`${selectedGeneration.result.title}\n\n${selectedGeneration.result.description}`)}
+                        onClick={() => copyToClipboard(`${selectedGeneration.result?.title || ''}\n\n${selectedGeneration.result?.description || ''}`)}
+                        disabled={!selectedGeneration.result}
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copy
@@ -197,6 +261,7 @@ ${result.callToAction}`
                         variant="outline"
                         size="sm"
                         onClick={() => exportAsText(selectedGeneration)}
+                        disabled={!selectedGeneration.result}
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Export
@@ -204,74 +269,86 @@ ${result.callToAction}`
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    {/* Title */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Title</label>
-                      <div className="p-3 bg-secondary rounded-md">
-                        <p className="font-medium">{selectedGeneration.result.title}</p>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Description</label>
-                      <div className="p-3 bg-secondary rounded-md">
-                        <p className="whitespace-pre-wrap">{selectedGeneration.result.description}</p>
-                      </div>
-                    </div>
-
-                    {/* Highlights */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Key Highlights</label>
-                      <div className="p-3 bg-secondary rounded-md">
-                        <ul className="list-disc list-inside space-y-1">
-                          {selectedGeneration.result.highlights.map((highlight, index) => (
-                            <li key={index} className="text-sm">{highlight}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Marketing Points */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Marketing Points</label>
-                      <div className="p-3 bg-secondary rounded-md">
-                        <ul className="list-disc list-inside space-y-1">
-                          {selectedGeneration.result.marketingPoints.map((point, index) => (
-                            <li key={index} className="text-sm">{point}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Call to Action */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Call to Action</label>
-                      <div className="p-3 bg-secondary rounded-md">
-                        <p className="font-medium text-primary">{selectedGeneration.result.callToAction}</p>
-                      </div>
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="border-t pt-4">
-                      <label className="block text-sm font-medium mb-2">Generation Info</label>
-                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                        <div>
-                          <span className="font-medium">Date:</span> {new Date(selectedGeneration.created_at).toLocaleString()}
-                        </div>
-                        <div>
-                          <span className="font-medium">Words:</span> {selectedGeneration.word_count}
-                        </div>
-                        <div>
-                          <span className="font-medium">Model:</span> {selectedGeneration.metadata.model}
-                        </div>
-                        <div>
-                          <span className="font-medium">Tokens:</span> {selectedGeneration.metadata.tokens_used}
+                  {selectedGeneration.result ? (
+                    <div className="space-y-6">
+                      {/* Title */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Title</label>
+                        <div className="p-3 bg-secondary rounded-md">
+                          <p className="font-medium">{selectedGeneration.result.title || 'Untitled'}</p>
                         </div>
                       </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Description</label>
+                        <div className="p-3 bg-secondary rounded-md">
+                          <p className="whitespace-pre-wrap">{selectedGeneration.result.description || 'No description'}</p>
+                        </div>
+                      </div>
+
+                      {/* Highlights */}
+                      {selectedGeneration.result.highlights?.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Key Highlights</label>
+                          <div className="p-3 bg-secondary rounded-md">
+                            <ul className="list-disc list-inside space-y-1">
+                              {selectedGeneration.result.highlights.map((highlight, index) => (
+                                <li key={index} className="text-sm">{highlight}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Marketing Points */}
+                      {selectedGeneration.result.marketingPoints?.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Marketing Points</label>
+                          <div className="p-3 bg-secondary rounded-md">
+                            <ul className="list-disc list-inside space-y-1">
+                              {selectedGeneration.result.marketingPoints.map((point, index) => (
+                                <li key={index} className="text-sm">{point}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Call to Action */}
+                      {selectedGeneration.result.callToAction && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Call to Action</label>
+                          <div className="p-3 bg-secondary rounded-md">
+                            <p className="font-medium text-primary">{selectedGeneration.result.callToAction}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Metadata */}
+                      <div className="border-t pt-4">
+                        <label className="block text-sm font-medium mb-2">Generation Info</label>
+                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                          <div>
+                            <span className="font-medium">Date:</span> {new Date(selectedGeneration.created_at).toLocaleString()}
+                          </div>
+                          <div>
+                            <span className="font-medium">Words:</span> {selectedGeneration.word_count || 0}
+                          </div>
+                          <div>
+                            <span className="font-medium">Model:</span> {selectedGeneration.metadata?.model || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Tokens:</span> {selectedGeneration.metadata?.tokens_used || 0}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="p-8 text-center text-muted-foreground">
+                      <p>Listing data unavailable</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-card border rounded-lg shadow-sm p-12 text-center">

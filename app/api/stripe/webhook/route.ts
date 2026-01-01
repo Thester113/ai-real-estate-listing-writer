@@ -132,23 +132,27 @@ export async function POST(request: NextRequest) {
 
     // Process the event
     switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutCompleted(event)
+        break
+
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await handleSubscriptionChange(event)
         break
-        
+
       case 'customer.subscription.deleted':
         await handleSubscriptionCancellation(event)
         break
-        
+
       case 'invoice.payment_succeeded':
         await handlePaymentSucceeded(event)
         break
-        
+
       case 'invoice.payment_failed':
         await handlePaymentFailed(event)
         break
-        
+
       default:
         console.log(`Unhandled event type: ${event.type}`)
     }
@@ -166,6 +170,66 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
+}
+
+async function handleCheckoutCompleted(event: Stripe.Event) {
+  const session = event.data.object as Stripe.Checkout.Session
+  const customerId = session.customer as string
+  const subscriptionId = session.subscription as string
+
+  console.log('🛒 Processing checkout completion:', {
+    sessionId: session.id,
+    customerId,
+    subscriptionId,
+    customerEmail: session.customer_email,
+    metadata: session.metadata
+  })
+
+  // Get user_id from metadata (set during checkout creation)
+  const userId = session.metadata?.user_id
+
+  if (!userId) {
+    console.error('❌ No user_id in checkout session metadata')
+    // Try to find user by email as fallback
+    if (session.customer_email) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('email', session.customer_email)
+        .single()
+
+      if (profile) {
+        console.log('✅ Found user by email, linking customer_id')
+        await (supabaseAdmin as any)
+          .from('profiles')
+          .update({
+            customer_id: customerId,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', profile.id)
+      }
+    }
+    return
+  }
+
+  // Link the Stripe customer to the user profile
+  const { error: updateError } = await (supabaseAdmin as any)
+    .from('profiles')
+    .update({
+      customer_id: customerId,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userId)
+
+  if (updateError) {
+    console.error('❌ Failed to link customer to profile:', updateError)
+    return
+  }
+
+  console.log(`✅ Linked Stripe customer ${customerId} to user ${userId}`)
+
+  // The subscription.created webhook will handle the plan/status update
+  // This handler ensures the customer_id is linked even if subscription webhook arrives first
 }
 
 async function handleSubscriptionChange(event: Stripe.Event) {
