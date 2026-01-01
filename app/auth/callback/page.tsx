@@ -14,10 +14,13 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Check URL hash for recovery flow
+        // Check URL hash for auth tokens
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
         const type = hashParams.get('type')
         const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+
+        console.log('Auth callback - type:', type, 'hasAccessToken:', !!accessToken)
 
         if (type === 'recovery' && accessToken) {
           // Password recovery flow - redirect to reset password page
@@ -25,6 +28,41 @@ export default function AuthCallbackPage() {
           router.push('/auth/reset-password')
           return
         }
+
+        // For signup/email confirmation, we need to set the session from URL tokens
+        if (accessToken && refreshToken && (type === 'signup' || type === 'email' || type === 'magiclink')) {
+          setMessage('Confirming your email...')
+
+          // Set the session using tokens from the URL hash
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+
+          if (sessionError) {
+            console.error('Failed to set session:', sessionError)
+            toast({
+              title: 'Authentication Error',
+              description: 'There was an error confirming your account. Please try signing in.',
+              variant: 'destructive',
+            })
+            router.push('/auth')
+            return
+          }
+
+          if (sessionData.session) {
+            toast({
+              title: 'Email confirmed successfully!',
+              description: 'Welcome to AI PropertyWriter. Your account is now active.',
+            })
+            router.push('/dashboard')
+            return
+          }
+        }
+
+        // Fallback: Check if there's already a session (e.g., from auto-detection)
+        // Give the Supabase client a moment to process any URL tokens
+        await new Promise(resolve => setTimeout(resolve, 500))
 
         const { data, error } = await supabase.auth.getSession()
 
@@ -48,6 +86,7 @@ export default function AuthCallbackPage() {
           router.push('/dashboard')
         } else {
           // No session found, redirect to auth
+          console.log('No session found in callback, redirecting to auth')
           router.push('/auth')
         }
       } catch (error) {
