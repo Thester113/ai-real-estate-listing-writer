@@ -51,24 +51,11 @@ export default function AuthCallbackPage() {
           }
 
           if (sessionData.session) {
-            // Subscribe to ConvertKit after successful email confirmation (signup only)
-            if (type === 'signup' && sessionData.session.user?.email) {
-              try {
-                await fetch('/api/convertkit/subscribe', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    email: sessionData.session.user.email,
-                    firstName: sessionData.session.user.user_metadata?.full_name || '',
-                    tags: ['New User', 'Free Trial'],
-                    plan: 'starter'
-                  })
-                })
-              } catch (convertKitError) {
-                console.error('ConvertKit subscription failed:', convertKitError)
-                // Don't block the flow if ConvertKit fails
-              }
-            }
+            // Note: ConvertKit subscription removed from signup flow to prevent duplicate emails.
+            // Users are added to ConvertKit when they:
+            // 1. Subscribe to the newsletter
+            // 2. Download a lead magnet
+            // 3. Upgrade to Pro (via Stripe webhook)
 
             toast({
               title: 'Email confirmed successfully!',

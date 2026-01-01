@@ -74,22 +74,8 @@ export default function AuthPage() {
             // Note: ConvertKit subscription happens after email confirmation in /auth/callback
             setEmailSent(true)
           } else {
-            // No email confirmation required - subscribe to ConvertKit now
-            try {
-              await fetch('/api/convertkit/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  email,
-                  firstName: fullName,
-                  tags: ['New User', 'Free Trial'],
-                  plan: 'starter'
-                })
-              })
-            } catch (convertKitError) {
-              console.error('ConvertKit subscription failed:', convertKitError)
-            }
             // User is immediately logged in (no email confirmation required)
+            // Note: ConvertKit subscription removed to prevent duplicate emails
             toast({
               title: 'Welcome to AI PropertyWriter!',
               description: 'Your account has been created and you are now signed in.',
