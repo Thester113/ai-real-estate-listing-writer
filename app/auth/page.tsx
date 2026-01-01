@@ -189,6 +189,16 @@ export default function AuthPage() {
                   Password must be at least 6 characters long
                 </p>
               )}
+              {!isSignUp && (
+                <div className="mt-1 text-right">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
             </div>
 
             <Button 

@@ -1,21 +1,33 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState('Confirming your account...')
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Check URL hash for recovery flow
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const type = hashParams.get('type')
+        const accessToken = hashParams.get('access_token')
+
+        if (type === 'recovery' && accessToken) {
+          // Password recovery flow - redirect to reset password page
+          setMessage('Redirecting to password reset...')
+          router.push('/auth/reset-password')
+          return
+        }
+
         const { data, error } = await supabase.auth.getSession()
-        
+
         if (error) {
           console.error('Auth callback error:', error)
           toast({
@@ -59,7 +71,7 @@ export default function AuthCallbackPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <h1 className="text-xl font-semibold mb-2">Confirming your account...</h1>
+          <h1 className="text-xl font-semibold mb-2">{message}</h1>
           <p className="text-muted-foreground">Please wait while we verify your email.</p>
         </div>
       </div>
