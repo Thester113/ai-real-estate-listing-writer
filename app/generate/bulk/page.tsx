@@ -24,6 +24,31 @@ interface BulkProperty {
   additionalDetails?: string
 }
 
+const MAX_BULK_PROPERTIES = 50 // Max properties per bulk upload
+
+// Parse CSV line handling quoted values with commas
+function parseCSVLine(line: string): string[] {
+  const result: string[] = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+
+    if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim())
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  result.push(current.trim())
+
+  return result
+}
+
 export default function BulkGeneratePage() {
   const [user, setUser] = useState<User | null>(null)
   const [userPlan, setUserPlan] = useState<string>('starter')
@@ -33,6 +58,7 @@ export default function BulkGeneratePage() {
   const [properties, setProperties] = useState<BulkProperty[]>([])
   const [results, setResults] = useState<any[]>([])
   const [progress, setProgress] = useState(0)
+  const [remainingGenerations, setRemainingGenerations] = useState<number>(500)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -43,29 +69,36 @@ export default function BulkGeneratePage() {
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session) {
         router.push('/auth?redirect=/generate/bulk')
         return
       }
 
       setUser(session.user)
-      
+
       // Get user profile to check plan
       const { data: profile } = await supabase
         .from('profiles')
         .select('plan')
         .eq('id', session.user.id)
         .single()
-      
+
       const userPlanValue = (profile as any)?.plan || 'starter'
-      
+
       if (userPlanValue !== 'pro') {
         router.push('/pricing')
         return
       }
-      
+
       setUserPlan(userPlanValue)
+
+      // Get usage to calculate remaining generations
+      const { getUserUsage } = await import('@/lib/supabase-client')
+      const usage = await getUserUsage(session.user.id)
+      const limit = 500 // Pro plan limit
+      const remaining = Math.max(0, limit - (usage?.listings_generated || 0))
+      setRemainingGenerations(remaining)
     } catch (error) {
       console.error('Auth error:', error)
       router.push('/auth')
@@ -93,7 +126,11 @@ Townhouse,4,3,2200,"Austin TX","Fireplace,Deck/Patio,Master Suite",Growing famil
     const file = event.target.files?.[0]
     if (!file) return
 
-    if (file.type !== 'text/csv') {
+    // Accept common CSV MIME types
+    const validTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain']
+    const isCSV = validTypes.includes(file.type) || file.name.endsWith('.csv')
+
+    if (!isCSV) {
       toast({
         title: 'Invalid file type',
         description: 'Please upload a CSV file',
@@ -111,18 +148,18 @@ Townhouse,4,3,2200,"Austin TX","Fireplace,Deck/Patio,Master Suite",Growing famil
     reader.onload = (e) => {
       const text = e.target?.result as string
       const lines = text.split('\n').filter(line => line.trim())
-      const headers = lines[0].split(',').map(h => h.trim())
-      
+      const headers = parseCSVLine(lines[0])
+
       const parsedProperties: BulkProperty[] = []
-      
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
+
+      for (let i = 1; i < lines.length && parsedProperties.length < MAX_BULK_PROPERTIES; i++) {
+        const values = parseCSVLine(lines[i])
         const property: any = {}
-        
+
         headers.forEach((header, index) => {
-          property[header] = values[index]
+          property[header] = values[index] || ''
         })
-        
+
         if (property.propertyType && property.location) {
           parsedProperties.push({
             propertyType: property.propertyType,
@@ -136,14 +173,25 @@ Townhouse,4,3,2200,"Austin TX","Fireplace,Deck/Patio,Master Suite",Growing famil
           })
         }
       }
-      
+
+      const totalInFile = lines.length - 1
+      const truncated = totalInFile > MAX_BULK_PROPERTIES
+
       setProperties(parsedProperties)
-      toast({
-        title: 'CSV uploaded successfully',
-        description: `Found ${parsedProperties.length} properties to process`
-      })
+
+      if (truncated) {
+        toast({
+          title: 'CSV uploaded with limit',
+          description: `Processing first ${MAX_BULK_PROPERTIES} of ${totalInFile} properties (max per upload)`,
+        })
+      } else {
+        toast({
+          title: 'CSV uploaded successfully',
+          description: `Found ${parsedProperties.length} properties to process`
+        })
+      }
     }
-    
+
     reader.readAsText(file)
   }
 
@@ -152,6 +200,16 @@ Townhouse,4,3,2200,"Austin TX","Fireplace,Deck/Patio,Master Suite",Growing famil
       toast({
         title: 'No properties to process',
         description: 'Please upload a CSV file first',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // Check if user has enough remaining generations
+    if (properties.length > remainingGenerations) {
+      toast({
+        title: 'Not enough generations remaining',
+        description: `You have ${remainingGenerations} generations left this month, but you're trying to generate ${properties.length} listings. Please reduce the number of properties.`,
         variant: 'destructive'
       })
       return
@@ -323,8 +381,13 @@ Townhouse,4,3,2200,"Austin TX","Fireplace,Deck/Patio,Master Suite",Growing famil
 
         {/* Upload Section */}
         <div className="bg-card border rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4">Upload Properties</h2>
-          
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Upload Properties</h2>
+            <div className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{remainingGenerations}</span> generations remaining this month
+            </div>
+          </div>
+
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
             <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <div className="space-y-2">
@@ -356,6 +419,12 @@ Townhouse,4,3,2200,"Austin TX","Fireplace,Deck/Patio,Master Suite",Growing famil
                   <p className="text-sm text-muted-foreground">
                     {properties.length} properties ready to process
                   </p>
+                  {properties.length > remainingGenerations && (
+                    <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" />
+                      Exceeds remaining generations ({remainingGenerations})
+                    </p>
+                  )}
                 </div>
                 <Button
                   onClick={generateBulkListings}
