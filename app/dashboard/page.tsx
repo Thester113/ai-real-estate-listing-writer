@@ -13,7 +13,7 @@ import {
 import { supabase, getProfile, getUserUsage } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
-import { Plus, FileText, TrendingUp, Crown, Zap, Upload, BarChart3, Palette, Target, Settings, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Plus, FileText, TrendingUp, Crown, Zap, Upload, BarChart3, Palette, Target, Settings, Sparkles, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -294,14 +294,13 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button asChild size="lg" className="gap-2">
-                    <Link href="/generate">
-                      <Plus className="h-5 w-5" />
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <Link href="/generate">
+                    <Button size="lg">
+                      <Plus className="h-5 w-5 mr-2" />
                       Create Your First Listing
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                    </Button>
+                  </Link>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                     <span>20 free listings included</span>
