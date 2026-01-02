@@ -7,8 +7,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-client'
 import * as zlib from 'zlib'
-import { Readable } from 'stream'
-import * as readline from 'readline'
 
 // Vercel function timeout (60 seconds for large data import)
 export const maxDuration = 60
@@ -85,19 +83,17 @@ export async function GET(request: NextRequest) {
     console.log('[REDFIN] Step 3: Processing data (keeping only latest records)...')
     const latestRecords = new Map<string, RedfinRecord>()
 
-    const readable = Readable.from(decompressedData)
-    const rl = readline.createInterface({
-      input: readable,
-      crlfDelay: Infinity
-    })
+    // Convert buffer to string and split by lines
+    const content = decompressedData.toString('utf-8')
+    const lines = content.split('\n')
 
-    let lineCount = 0
     let headers: string[] = []
 
-    for await (const line of rl) {
-      lineCount++
+    for (let lineCount = 0; lineCount < lines.length; lineCount++) {
+      const line = lines[lineCount]
+      if (!line.trim()) continue
 
-      if (lineCount === 1) {
+      if (lineCount === 0) {
         // Parse headers
         headers = line.split('\t').map((h: string) => h.replace(/"/g, ''))
         continue
@@ -154,6 +150,8 @@ export async function GET(request: NextRequest) {
         })
       }
     }
+
+    const lineCount = lines.length
 
     const finalRecords = Array.from(latestRecords.values())
     const uniqueZips = new Set(finalRecords.map(r => r.zip_code)).size
