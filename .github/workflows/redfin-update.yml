@@ -1,0 +1,32 @@
+name: Weekly Redfin Data Update
+
+on:
+  schedule:
+    # Every Saturday at 3 AM UTC
+    - cron: '0 3 * * 6'
+  workflow_dispatch:
+    # Allow manual trigger
+
+jobs:
+  update-redfin-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Redfin data import
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx tsx scripts/import-latest-redfin-data.ts
