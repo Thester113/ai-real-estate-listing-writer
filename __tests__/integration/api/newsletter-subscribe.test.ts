@@ -13,8 +13,16 @@ vi.mock('@/lib/security', () => ({
   }),
 }))
 
-vi.mock('@/lib/analytics', () => ({
+vi.mock('@/lib/analytics-server', () => ({
   trackServerEvent: vi.fn(),
+}))
+
+vi.mock('@/lib/supabase-client', () => ({
+  supabaseAdmin: {
+    from: vi.fn(() => ({
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+    })),
+  },
 }))
 
 vi.mock('@/lib/utils', () => ({
@@ -29,7 +37,7 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 import { POST } from '@/app/api/newsletter/subscribe/route'
-import { trackServerEvent } from '@/lib/analytics'
+import { trackServerEvent } from '@/lib/analytics-server'
 
 function createRequest(body: any): NextRequest {
   return new NextRequest(new URL('http://localhost:3000/api/newsletter/subscribe'), {
