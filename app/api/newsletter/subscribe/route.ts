@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { secureJsonResponse } from '@/lib/security'
-import { trackServerEvent } from '@/lib/analytics'
+import { trackServerEvent } from '@/lib/analytics-server'
 import { getErrorMessage } from '@/lib/utils'
 import { supabaseAdmin } from '@/lib/supabase-client'
 
