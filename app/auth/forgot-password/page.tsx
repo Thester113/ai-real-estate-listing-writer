@@ -1,18 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase-client'
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
 import { ArrowLeft, Mail } from 'lucide-react'
 import Link from 'next/link'
+import { CaptchaWidget, type CaptchaWidgetRef } from '@/components/captcha-widget'
+import { isCaptchaEnabled } from '@/lib/captcha-config'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const captchaRef = useRef<CaptchaWidgetRef>(null)
   const { toast } = useToast()
+
+  // Check if form can be submitted (CAPTCHA token required if enabled)
+  const canSubmit = !loading && (!isCaptchaEnabled() || captchaToken)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,6 +28,7 @@ export default function ForgotPasswordPage() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback`,
+        captchaToken: captchaToken || undefined,
       })
 
       if (error) throw error
@@ -38,6 +46,8 @@ export default function ForgotPasswordPage() {
       })
     } finally {
       setLoading(false)
+      // Reset CAPTCHA for next attempt
+      captchaRef.current?.reset()
     }
   }
 
@@ -102,11 +112,17 @@ export default function ForgotPasswordPage() {
                   />
                 </div>
 
+                <CaptchaWidget
+                  ref={captchaRef}
+                  onToken={setCaptchaToken}
+                  className="flex justify-center"
+                />
+
                 <Button
                   type="submit"
                   className="w-full"
                   loading={loading}
-                  disabled={loading}
+                  disabled={!canSubmit}
                 >
                   Send Reset Link
                 </Button>

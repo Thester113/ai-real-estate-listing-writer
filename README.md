@@ -137,6 +137,52 @@ Required environment variables:
 
 See `.env.example` for all available configuration options.
 
+## Enabling CAPTCHA Protection
+
+The app supports Cloudflare Turnstile CAPTCHA to protect auth flows (sign up, sign in, password reset) from bots and abuse.
+
+### Step 1: Create Turnstile Site
+
+1. Go to [Cloudflare Turnstile Dashboard](https://dash.cloudflare.com/?to=/:account/turnstile)
+2. Click "Add site"
+3. Enter your domain(s) (e.g., `yourdomain.com`, `localhost` for dev)
+4. Select widget mode: **Managed** (recommended)
+5. Copy the **Site Key** and **Secret Key**
+
+### Step 2: Configure Supabase
+
+1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
+2. Navigate to **Authentication** > **Bot and Abuse Protection**
+3. Enable **CAPTCHA protection**
+4. Select **Cloudflare Turnstile** as the provider
+5. Paste the **Secret Key** from Step 1
+6. Save changes
+
+### Step 3: Configure Your App
+
+Add the site key to your environment variables:
+
+```bash
+# In .env.local
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...  # Your Turnstile site key
+```
+
+For Vercel deployments, add this to your project's environment variables.
+
+### Local Development
+
+For local development without a real Turnstile widget, use Cloudflare's test keys:
+
+```bash
+# Always passes verification
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+# Always fails verification (for testing error handling)
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=2x00000000000000000000AB
+```
+
+**Note:** If `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is not set, CAPTCHA is disabled and forms work normally.
+
 ## Project Structure
 
 ```

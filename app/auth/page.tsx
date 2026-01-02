@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase-client'
@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/lib/utils'
 import { Eye, EyeOff, ArrowLeft, Mail, CheckCircle2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+import { CaptchaWidget, type CaptchaWidgetRef } from '@/components/captcha-widget'
+import { isCaptchaEnabled } from '@/lib/captcha-config'
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -18,8 +20,13 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [resending, setResending] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const captchaRef = useRef<CaptchaWidgetRef>(null)
   const router = useRouter()
   const { toast } = useToast()
+
+  // Check if form can be submitted (CAPTCHA token required if enabled)
+  const canSubmit = !loading && (!isCaptchaEnabled() || captchaToken)
 
   const handleResendEmail = async () => {
     setResending(true)
@@ -58,6 +65,7 @@ export default function AuthPage() {
           email,
           password,
           options: {
+            captchaToken: captchaToken || undefined,
             data: {
               full_name: fullName,
             },
@@ -88,6 +96,7 @@ export default function AuthPage() {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
+          options: { captchaToken: captchaToken || undefined },
         })
 
         if (error) throw error
@@ -108,6 +117,8 @@ export default function AuthPage() {
       })
     } finally {
       setLoading(false)
+      // Reset CAPTCHA for next attempt
+      captchaRef.current?.reset()
     }
   }
 
@@ -287,11 +298,17 @@ export default function AuthPage() {
               )}
             </div>
 
-            <Button 
-              type="submit" 
+            <CaptchaWidget
+              ref={captchaRef}
+              onToken={setCaptchaToken}
+              className="flex justify-center"
+            />
+
+            <Button
+              type="submit"
               className="w-full"
               loading={loading}
-              disabled={loading}
+              disabled={!canSubmit}
             >
               {isSignUp ? 'Create Account' : 'Sign In'}
             </Button>

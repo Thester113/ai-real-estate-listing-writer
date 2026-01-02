@@ -115,11 +115,11 @@ export function getSecurityHeaders() {
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.posthog.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.posthog.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://api.openai.com https://api.stripe.com https://*.supabase.co https://us.posthog.com https://*.sentry.io",
-      "frame-src https://js.stripe.com",
+      "connect-src 'self' https://api.openai.com https://api.stripe.com https://*.supabase.co https://us.posthog.com https://*.sentry.io https://challenges.cloudflare.com",
+      "frame-src https://js.stripe.com https://challenges.cloudflare.com",
       "object-src 'none'",
       "base-uri 'self'"
     ].join('; '),
