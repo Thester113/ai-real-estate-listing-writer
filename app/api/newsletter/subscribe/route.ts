@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { secureJsonResponse } from '@/lib/security'
 import { trackServerEvent } from '@/lib/analytics'
 import { getErrorMessage } from '@/lib/utils'
+import { supabaseAdmin } from '@/lib/supabase-client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +63,19 @@ export async function POST(request: NextRequest) {
       }
 
       throw new Error(convertKitData.message || 'Failed to subscribe to newsletter')
+    }
+
+    // Store in Supabase for local backup/analytics
+    const { error: dbError } = await supabaseAdmin
+      .from('email_subscribers')
+      .upsert(
+        { email, subscribed: true },
+        { onConflict: 'email' }
+      )
+
+    if (dbError) {
+      // Log but don't fail - ConvertKit is the primary source
+      console.error('Failed to save subscriber to database:', dbError)
     }
 
     // Track successful newsletter signup
