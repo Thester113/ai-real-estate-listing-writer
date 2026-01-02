@@ -17,10 +17,11 @@ vi.mock('@/lib/analytics-server', () => ({
   trackServerEvent: vi.fn(),
 }))
 
+const mockUpsert = vi.fn().mockResolvedValue({ error: null })
 vi.mock('@/lib/supabase-client', () => ({
   supabaseAdmin: {
     from: vi.fn(() => ({
-      upsert: vi.fn().mockResolvedValue({ error: null }),
+      upsert: mockUpsert,
     })),
   },
 }))
@@ -213,6 +214,22 @@ describe('POST /api/newsletter/subscribe', () => {
         email: 'track@example.com',
         source: 'blog_page',
       }))
+    })
+
+    it('continues successfully even when database save fails', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ subscription: { id: 123 } }),
+      })
+      mockUpsert.mockResolvedValueOnce({ error: { message: 'Database connection failed' } })
+
+      const request = createRequest({ email: 'dbfail@example.com' })
+      const response = await POST(request)
+      const data = await response.json()
+
+      // Should still succeed - ConvertKit is primary, DB is backup
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
     })
   })
 
