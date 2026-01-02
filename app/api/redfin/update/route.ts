@@ -6,7 +6,10 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-client'
-import * as zlib from 'zlib'
+import { gunzip } from 'zlib'
+import { promisify } from 'util'
+
+const gunzipAsync = promisify(gunzip)
 
 // Vercel function timeout (60 seconds for large data import)
 export const maxDuration = 60
@@ -76,7 +79,7 @@ export async function GET(request: NextRequest) {
 
     // Step 2: Decompress the gzip data
     console.log('[REDFIN] Step 2: Decompressing data...')
-    const decompressedData = zlib.gunzipSync(compressedData)
+    const decompressedData = await gunzipAsync(compressedData)
     console.log(`[REDFIN] Decompressed to ${(decompressedData.length / (1024 * 1024)).toFixed(1)}MB`)
 
     // Step 3: Parse TSV and keep only latest records
