@@ -10,7 +10,7 @@ Vercel: https://vercel.com
 React: https://react.dev
 
 /* SITE */
-Last update: 2025-12-26
+Last update: 2026-01-01
 Language: English
 Doctype: HTML5
 IDE: Visual Studio Code, Claude Code

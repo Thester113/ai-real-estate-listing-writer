@@ -23,7 +23,7 @@ export default function HomePage() {
         priceCurrency: 'USD',
         name: 'Starter Plan',
         description: 'Free plan with 20 listings per month',
-        priceValidUntil: '2025-12-31',
+        priceValidUntil: '2026-12-31',
       },
       {
         '@type': 'Offer',
@@ -31,7 +31,7 @@ export default function HomePage() {
         priceCurrency: 'USD',
         name: 'Pro Plan',
         description: 'Unlimited real estate listing generation',
-        priceValidUntil: '2025-12-31',
+        priceValidUntil: '2026-12-31',
       }
     ],
     aggregateRating: {

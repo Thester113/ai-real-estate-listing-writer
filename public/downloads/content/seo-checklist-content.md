@@ -395,5 +395,5 @@ While you're optimizing your SEO, make sure your listing descriptions are just a
 
 ---
 
-*© 2025 AI Property Writer | TGHSoftwareLLC*
+*© 2026 AI Property Writer | TGHSoftwareLLC*
 *www.aipropertywriter.com*

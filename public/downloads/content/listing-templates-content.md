@@ -306,5 +306,5 @@ No credit card required.
 
 ---
 
-*© 2025 AI Property Writer | TGHSoftwareLLC*
+*© 2026 AI Property Writer | TGHSoftwareLLC*
 *www.aipropertywriter.com*
