@@ -17,6 +17,9 @@
     },
     "app/api/market-analysis/route.ts": {
       "maxDuration": 15
+    },
+    "app/api/redfin/update/route.ts": {
+      "maxDuration": 60
     }
   },
   "crons": [
@@ -25,8 +28,12 @@
       "schedule": "0 9 * * 1"
     },
     {
-      "path": "/api/digest/send", 
+      "path": "/api/digest/send",
       "schedule": "0 15 * * 5"
+    },
+    {
+      "path": "/api/redfin/update",
+      "schedule": "0 3 * * 6"
     }
   ],
   "headers": [
