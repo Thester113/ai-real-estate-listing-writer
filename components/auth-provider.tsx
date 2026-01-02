@@ -68,8 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           router.push('/dashboard')
         }
       } else if (event === 'SIGNED_OUT') {
-        // User signed out
-        router.push('/')
+        // User signed out - only redirect if on a protected page
+        const currentPath = window.location.pathname
+        const publicPaths = ['/', '/auth', '/blog', '/pricing', '/contact', '/subscribed', '/privacy', '/terms']
+        const isPublicPage = publicPaths.some(p => currentPath === p || currentPath.startsWith('/blog/'))
+        if (!isPublicPage) {
+          router.push('/')
+        }
       }
     })
 
