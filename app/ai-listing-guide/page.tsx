@@ -45,7 +45,7 @@ export default function AIListingGuidePage() {
       title="Complete Guide to AI-Powered Real Estate Listings"
       subtitle="25-page ebook on using AI to write listings that sell faster - with prompts, case studies, and proven strategies"
       benefits={benefits}
-      tags={['Lead Magnet', 'AI Guide']}
+      tags={['Lead Magnet', 'AI Listing Guide']}
       preview={preview}
       testimonial={testimonial}
     />
