@@ -14,7 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         '/history',
         '/admin',
         '/api/',
-        '/_next/',
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
