@@ -31,6 +31,15 @@
   ],
   "headers": [
     {
+      "source": "/((?!api/).*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow"
+        }
+      ]
+    },
+    {
       "source": "/api/(.*)",
       "headers": [
         {

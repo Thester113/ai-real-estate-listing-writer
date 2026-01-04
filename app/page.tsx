@@ -5,6 +5,19 @@ import { ArrowRight, Zap, Users, Star } from 'lucide-react'
 import { EmailCapture } from '@/components/email-capture'
 import { Footer } from '@/components/footer'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'AI Property Writer – Generate Real Estate Listings Instantly',
+  description: 'The only AI platform that generates 3 listing variations, Instagram/Facebook posts, and market-powered copy instantly. Save 10+ hours per week.',
+  alternates: {
+    canonical: 'https://www.aipropertywriter.com',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
 
 export default function HomePage() {
   // Structured data for SEO

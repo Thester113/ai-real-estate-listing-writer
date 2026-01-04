@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'AI PropertyWriter' }],
   creator: 'AI PropertyWriter',
   publisher: 'AI PropertyWriter',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.aipropertywriter.com'),
+  metadataBase: new URL('https://www.aipropertywriter.com'),
   alternates: {
-    canonical: '/',
+    canonical: 'https://www.aipropertywriter.com',
     types: {
       'application/rss+xml': 'https://www.aipropertywriter.com/rss.xml',
     },
