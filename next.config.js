@@ -2,6 +2,8 @@
 const { withSentryConfig } = require('@sentry/nextjs')
 
 const nextConfig = {
+  // Ensure consistent URLs without trailing slashes (matches sitemap)
+  trailingSlash: false,
   experimental: {
     serverComponentsExternalPackages: ['@sentry/nextjs'],
   },
