@@ -228,9 +228,12 @@ export default function Dashboard() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onSelect={() => router.push('/dashboard/settings')}>
+                    Account Settings
+                  </DropdownMenuItem>
                   {profile.customer_id && (
                     <DropdownMenuItem
-                      onClick={handleManageBilling}
+                      onSelect={handleManageBilling}
                       disabled={isBillingLoading}
                     >
                       {isBillingLoading ? (

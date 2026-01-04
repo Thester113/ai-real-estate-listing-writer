@@ -29,6 +29,53 @@ export default function AuthCallbackPage() {
           return
         }
 
+        // Handle email change confirmation
+        if (accessToken && refreshToken && type === 'email_change') {
+          setMessage('Confirming your new email...')
+
+          // Set the session using tokens from the URL hash
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+
+          if (sessionError) {
+            console.error('Failed to set session:', sessionError)
+            toast({
+              title: 'Error',
+              description: 'There was an error confirming your new email. Please try again.',
+              variant: 'destructive',
+            })
+            router.push('/dashboard/settings')
+            return
+          }
+
+          if (sessionData.session) {
+            // Sync the new email to the profiles table
+            const newEmail = sessionData.session.user.email
+            if (newEmail) {
+              const { error: updateError } = await (supabase as any)
+                .from('profiles')
+                .update({
+                  email: newEmail,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', sessionData.session.user.id)
+
+              if (updateError) {
+                console.error('Failed to sync email to profile:', updateError)
+              }
+            }
+
+            toast({
+              title: 'Email updated successfully!',
+              description: `Your email has been changed to ${newEmail}.`,
+            })
+            router.push('/dashboard/settings')
+            return
+          }
+        }
+
         // For signup/email confirmation, we need to set the session from URL tokens
         if (accessToken && refreshToken && (type === 'signup' || type === 'email' || type === 'magiclink')) {
           setMessage('Confirming your email...')

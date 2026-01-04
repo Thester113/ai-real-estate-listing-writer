@@ -13,6 +13,8 @@ const RATE_LIMIT_CONFIG = {
     '/api/stripe/webhook': 1000,   // High limit for webhooks
     '/api/newsletter/subscribe': 10, // 10 newsletter signups per 15 minutes
     '/api/contact': 5,             // 5 contact form submissions per 15 minutes
+    '/api/account/update-email': 5, // 5 email changes per 15 minutes
+    '/api/account/update-profile': 10, // 10 profile updates per 15 minutes
     'default': 100                 // Default limit
   }
 }
