@@ -4,25 +4,18 @@ import { useEffect, useState } from 'react'
 import { MAINTENANCE_CONFIG, MAINTENANCE_MODE_ENABLED } from '@/lib/maintenance'
 
 export default function MaintenanceCheck({ children }: { children: React.ReactNode }) {
+  // Initialize with the same value that will be used on client to prevent hydration mismatch
+  // During SSR and initial client render, this will be false (showing children)
+  // This prevents the __next_error__ shell from being triggered
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Use the centralized maintenance mode configuration
-    console.log('🔧 MaintenanceCheck: MAINTENANCE_MODE_ENABLED:', MAINTENANCE_MODE_ENABLED)
-    
-    setIsMaintenanceMode(MAINTENANCE_MODE_ENABLED)
-    setIsLoading(false)
+    // Only check maintenance mode on client after hydration
+    if (MAINTENANCE_MODE_ENABLED) {
+      console.log('🔧 MaintenanceCheck: Maintenance mode enabled')
+      setIsMaintenanceMode(true)
+    }
   }, [])
-
-  // Show loading briefly to prevent flash
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
 
   // Show maintenance mode for production domain
   if (isMaintenanceMode) {

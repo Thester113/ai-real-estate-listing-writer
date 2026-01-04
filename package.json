@@ -20,6 +20,8 @@
     "stripe:setup": "node scripts/stripe-setup.js",
     "smoke": "node scripts/smoke.mjs",
     "sitemap": "tsx scripts/generate-sitemap.ts",
+    "seo:ping": "tsx scripts/ping-search-engines.ts",
+    "seo:indexnow": "tsx scripts/submit-indexnow.ts",
     "postbuild": "npm run sitemap"
   },
   "dependencies": {

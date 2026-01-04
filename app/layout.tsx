@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/toaster'
 import { Analytics } from '@/components/analytics'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -101,7 +102,9 @@ export default function RootLayout({
             </ThemeProvider>
           </AuthProvider>
         </ErrorBoundary>
-        <Analytics />
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
         <Toaster />
       </body>
     </html>
