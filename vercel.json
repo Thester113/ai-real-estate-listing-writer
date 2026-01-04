@@ -1,4 +1,17 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "aipropertywriter.com"
+        }
+      ],
+      "destination": "https://www.aipropertywriter.com/:path*",
+      "permanent": true
+    }
+  ],
   "functions": {
     "app/api/generate/listing/route.ts": {
       "maxDuration": 30
