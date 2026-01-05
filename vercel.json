@@ -30,6 +30,9 @@
     },
     "app/api/market-analysis/route.ts": {
       "maxDuration": 15
+    },
+    "app/api/social/daily-post/route.ts": {
+      "maxDuration": 30
     }
   },
   "crons": [
@@ -40,6 +43,14 @@
     {
       "path": "/api/digest/send",
       "schedule": "0 15 * * 5"
+    },
+    {
+      "path": "/api/social/refresh-tokens",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/social/daily-post",
+      "schedule": "0 16 * * *"
     }
   ],
   "headers": [

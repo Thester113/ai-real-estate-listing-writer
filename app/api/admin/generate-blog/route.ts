@@ -219,13 +219,40 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Blog post saved to database!')
 
+    // Trigger social media posting (non-blocking)
+    let socialPostingResult = null
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const socialResponse = await fetch(`${baseUrl}/api/social/post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${cronSecret}`
+        },
+        body: JSON.stringify({
+          blogPostId: insertResult.id,
+        })
+      })
+
+      if (socialResponse.ok) {
+        socialPostingResult = await socialResponse.json()
+        console.log('[BLOG] Social media posting results:', socialPostingResult)
+      } else {
+        console.error('[BLOG] Social media posting failed:', await socialResponse.text())
+      }
+    } catch (socialError) {
+      // Log but don't fail blog generation
+      console.error('[BLOG] Social media posting error:', socialError)
+    }
+
     return NextResponse.json({
       success: true,
       data: {
         id: insertResult.id,
         title: result.title,
         slug: uniqueSlug,
-        readTime: readTime
+        readTime: readTime,
+        socialPosting: socialPostingResult?.data?.summary || null
       }
     })
 

@@ -150,6 +150,39 @@ See `vercel.json`:
 - Cron jobs: Weekly blog generation (Mon 9am), Weekly digest (Fri 3pm)
 - Security headers applied to all API routes
 
+## Deployment Workflow (IMPORTANT)
+
+**Always deploy through GitHub - never use `vercel` CLI directly.**
+
+### Required Steps Before Pushing
+
+1. **Run tests**: `npm run test`
+2. **Run typecheck**: `npm run typecheck`
+3. **Run lint**: `npm run lint:check`
+4. **Build locally**: `npm run build`
+
+### Deployment Process
+
+```bash
+# After all tests pass:
+git add .
+git commit -m "Description of changes"
+git push origin main
+```
+
+Vercel automatically deploys when changes are pushed to GitHub:
+- Push to `main` → Production deployment (www.aipropertywriter.com)
+- Push to other branches → Preview deployment
+
+### Why GitHub, Not Vercel CLI
+
+- GitHub is the source of truth for all code
+- Enables code review via pull requests
+- Maintains deployment history and rollback capability
+- Ensures CI/CD pipeline consistency
+
+**Do NOT use `vercel --prod` or `npm run deploy` directly.**
+
 ## Important Notes
 
 ### When Working with Stripe
